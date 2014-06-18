@@ -16,19 +16,21 @@ public class ${className} implements AstModel {
 	private static final long serialVersionUID = 3391739370239888528L;
 	
 	#foreach($c in $fieldList)
-	${c}
+${c}
 	#end
 	
 	public ${className}() {
 	}
-	#foreach($c in $methodList)
-	public ${c.fieldType} get${c.methodName}() {
+	
+	#foreach($c in $getsetMethodList)
+public ${c.fieldType} get${c.methodName}() {
 		return this.${c.methodParam};
 	}
 
 	public void set${c.methodName}(${c.fieldType} ${c.methodParam}) {
 		this.${c.methodParam} = ${c.methodParam};
 	}
+	
 	#end
 
 }

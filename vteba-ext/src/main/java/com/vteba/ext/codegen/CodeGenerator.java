@@ -69,16 +69,6 @@ static VelocityEngine velocityEngine;
 		boolean genMapper = true;
 		//**************调整这五个参数的值 end**************//
 		
-		
-		String fullPack = "com.vteba." + module + ".model." + className;
-		Class<?> clazz = null;
-		try {
-			clazz = Class.forName(fullPack);
-		} catch (ClassNotFoundException e) {
-			System.err.println(e.getMessage());
-			return;
-		}
-		
 		VelocityContext context = new VelocityContext();
 		context.put("schema", schema);
 		context.put("className", className);
@@ -107,12 +97,40 @@ static VelocityEngine velocityEngine;
 		String serviceTemplateName = "Service.java";
 		String serviceImplTemplateName = "ServiceImpl.java";
 		String mapperTemplateName = "Mapper.java";
+		String modelTemplateName = "Model.java";
 		
 		//String classPath = parentPackagePath + pgk + "dao/mapper/" + className;
 		
 		String targetJavaFile = rootPath + srcPath + parentPackagePath + pgk;
 		
+		//*********************如果不想产生某种类型的文件，请注释掉**************************//
+		if (genDao) {
+			generateFile(context, daoTemplateName, targetJavaFile + "dao/spi/" + className);//dao接口
+			generateFile(context, daoImplTemplateName, targetJavaFile + "dao/impl/" + className);//dao实现（不能单独产生）
+		}
+		if (genService) {
+			generateFile(context, serviceTemplateName, targetJavaFile + "service/spi/" + className);//service接口
+			generateFile(context, serviceImplTemplateName, targetJavaFile + "service/impl/" + className);//service实现（不能单独产生）
+		}
+		if (genAction) {
+			generateFile(context, actionTemplateName, targetJavaFile + "action/" + className);//action
+		}
+		
+		generateFile(context, modelTemplateName, targetJavaFile + "model/" + className);//model
+		
+		
+		//*************产生mybatis mapper*******************//
+		
 		List<MethodBean> methodList = new ArrayList<MethodBean>();
+		
+		String fullPack = "com.vteba." + module + ".model." + className;
+		Class<?> clazz = null;
+		try {
+			clazz = Class.forName(fullPack);
+		} catch (ClassNotFoundException e) {
+			System.err.println(e.getMessage());
+			return;
+		}
 		
 		MethodAccess methodAccess = MethodAccess.get(clazz);
 		String[] methodNames = methodAccess.getMethodNames();
@@ -128,19 +146,6 @@ static VelocityEngine velocityEngine;
 			i++;
 		}
 		context.put("methodList", methodList);
-		
-		//*********************如果不想产生某种类型的文件，请注释掉**************************//
-		if (genDao) {
-			generateFile(context, daoTemplateName, targetJavaFile + "dao/spi/" + className);//dao接口
-			generateFile(context, daoImplTemplateName, targetJavaFile + "dao/impl/" + className);//dao实现（不能单独产生）
-		}
-		if (genService) {
-			generateFile(context, serviceTemplateName, targetJavaFile + "service/spi/" + className);//service接口
-			generateFile(context, serviceImplTemplateName, targetJavaFile + "service/impl/" + className);//service实现（不能单独产生）
-		}
-		if (genAction) {
-			generateFile(context, actionTemplateName, targetJavaFile + "action/" + className);//action
-		}
 		
 		if (genMapper) {
 			generateFile(context, mapperTemplateName, targetJavaFile + "dao/mapper/" + className);//mybatis mapper
@@ -159,13 +164,15 @@ static VelocityEngine velocityEngine;
 	public static void generateFile(VelocityContext context, String templateName,
 			String baseJavaFilePath) {
 		try {
-			File file = new File(baseJavaFilePath + templateName);
+			File file = null;
+			if (templateName.equals("Model.java")) {
+				file = new File(baseJavaFilePath + ".java");
+			}
+			file = new File(baseJavaFilePath + templateName);
 			if (!file.exists()) {
 				new File(file.getParent()).mkdirs();
-			} else {
-				
 			}
-
+			
 			Template template = velocityEngine.getTemplate(templateName, "UTF-8");
 			FileOutputStream fos = new FileOutputStream(file);
 			BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(fos, "UTF-8"));

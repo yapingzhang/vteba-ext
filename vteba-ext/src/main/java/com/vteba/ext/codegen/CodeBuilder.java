@@ -34,6 +34,7 @@ public class CodeBuilder {
 	private String tableDesc;
 	private KeyType keyType;
 	private String module;
+	private String tableName;
 	
 	private VelocityEngine velocityEngine;
 	
@@ -111,6 +112,11 @@ public class CodeBuilder {
 		return this.module;
 	}
 	
+	public CodeBuilder tableName(String tableName) {
+		this.tableName = tableName;
+		return this;
+	}
+	
 	/**
 	 * 生成代码。
 	 */
@@ -144,15 +150,6 @@ public class CodeBuilder {
 			System.err.println("rootPath为空，调用构造函数时参数rootPath不能为null。");
 		}
 		
-		String fullPack = "com.vteba." + module + ".model." + className;
-		Class<?> clazz = null;
-		try {
-			clazz = Class.forName(fullPack);
-		} catch (ClassNotFoundException e) {
-			System.err.println(e.getMessage());
-			return;
-		}
-		
 		VelocityContext context = new VelocityContext();
 		context.put("schema", schema);
 		context.put("className", className);
@@ -181,27 +178,11 @@ public class CodeBuilder {
 		String serviceTemplateName = "Service.java";
 		String serviceImplTemplateName = "ServiceImpl.java";
 		String mapperTemplateName = "Mapper.java";
+		String modelTemplateName = "Model.java";
 		
 		//String classPath = parentPackagePath + pgk + "dao/mapper/" + className;
 		
 		String targetJavaFile = rootPath + srcPath + parentPackagePath + pgk;
-		
-		List<MethodBean> methodList = new ArrayList<MethodBean>();
-		
-		MethodAccess methodAccess = MethodAccess.get(clazz);
-		String[] methodNames = methodAccess.getMethodNames();
-		Class<?>[][] paramTypes = methodAccess.getParameterTypes();
-		int i = 0;
-		for (String methodName : methodNames) {
-			if (methodName.startsWith("set")) {
-				MethodBean methodBean = new MethodBean();
-				methodBean.setMethodName(methodName);
-				matchResultSet(methodBean, paramTypes[i][0]);
-				methodList.add(methodBean);
-			}
-			i++;
-		}
-		context.put("methodList", methodList);
 		
 		//*********************如果不想产生某种类型的文件，请注释掉**************************//
 		if (genDao) {
@@ -216,9 +197,43 @@ public class CodeBuilder {
 			generateFile(context, actionTemplateName, targetJavaFile + "action/" + className);//action
 		}
 		
-		if (genMapper) {
-			generateFile(context, mapperTemplateName, targetJavaFile + "dao/mapper/" + className);//mybatis mapper
+		if (tableName != null) {
+			new DatabaseModelBuilder("file:" + rootPath).setTableName(tableName).buildParam(context);
+			generateFile(context, modelTemplateName, targetJavaFile + "model/" + className);//model
 		}
+		
+		
+		//*************产生mybatis mapper*******************//
+		
+//		List<MethodBean> methodList = new ArrayList<MethodBean>();
+//
+//		String fullPack = "com.vteba." + module + ".model." + className;
+//		Class<?> clazz = null;
+//		try {
+//			clazz = Class.forName(fullPack);
+//		} catch (ClassNotFoundException e) {
+//			System.err.println(e.getMessage());
+//			return;
+//		}
+//
+//		MethodAccess methodAccess = MethodAccess.get(clazz);
+//		String[] methodNames = methodAccess.getMethodNames();
+//		Class<?>[][] paramTypes = methodAccess.getParameterTypes();
+//		int i = 0;
+//		for (String methodName : methodNames) {
+//			if (methodName.startsWith("set")) {
+//				MethodBean methodBean = new MethodBean();
+//				methodBean.setMethodName(methodName);
+//				matchResultSet(methodBean, paramTypes[i][0]);
+//				methodList.add(methodBean);
+//			}
+//			i++;
+//		}
+//		context.put("methodList", methodList);		
+//		
+//		if (genMapper) {
+//			generateFile(context, mapperTemplateName, targetJavaFile + "dao/mapper/" + className);//mybatis mapper
+//		}
 		//*********************如果不想产生某种类型的文件，请注释掉**************************//
 	}
 	
@@ -233,7 +248,12 @@ public class CodeBuilder {
 	public void generateFile(VelocityContext context, String templateName,
 			String baseJavaFilePath) {
 		try {
-			File file = new File(baseJavaFilePath + templateName);
+			File file = null;
+			if (templateName.equals("Model.java")) {
+				file = new File(baseJavaFilePath + ".java");
+			} else {
+				file = new File(baseJavaFilePath + templateName);
+			}
 			if (!file.exists()) {
 				new File(file.getParent()).mkdirs();
 			}
@@ -242,6 +262,7 @@ public class CodeBuilder {
 			FileOutputStream fos = new FileOutputStream(file);
 			BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(fos, "UTF-8"));
 			template.merge(context, writer);
+			template.process();
 			writer.flush();
 			writer.close();
 			fos.close();
