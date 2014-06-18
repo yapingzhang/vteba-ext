@@ -5,6 +5,7 @@ public class MethodPart {
 	private String methodParam;
 	private String methodBody;
 	private String fieldType;
+	private String annotation;
 
 	public String getMethodName() {
 		return methodName;
@@ -36,6 +37,14 @@ public class MethodPart {
 
 	public void setFieldType(String fieldType) {
 		this.fieldType = fieldType;
+	}
+
+	public String getAnnotation() {
+		return annotation;
+	}
+
+	public void setAnnotation(String annotation) {
+		this.annotation = annotation;
 	}
 
 }

@@ -23,6 +23,7 @@ public class DatabaseModelBuilder {
 	private String user;
 	private String password;
 	private String tableName;
+	private boolean pojo = true;
 	
 	public DatabaseModelBuilder(String rootPath) {
 		String propPath = rootPath + "src\\main\\resources\\jndi.properties";
@@ -44,6 +45,11 @@ public class DatabaseModelBuilder {
 	
 	public DatabaseModelBuilder setTableName(String tableName) {
 		this.tableName = tableName;
+		return this;
+	}
+	
+	public DatabaseModelBuilder setPojo(boolean pojo) {
+		this.pojo = pojo;
 		return this;
 	}
 	
@@ -101,6 +107,11 @@ public class DatabaseModelBuilder {
 				String capFieldName = StringUtils.capitalize(fieldName);
 				methodPart.setMethodName(capFieldName);
 				methodPart.setMethodParam(fieldName);
+				
+				if (!pojo) {// 如果不是pojo，那么使用jpa的注解
+					methodPart.setAnnotation("");
+				}
+				
 				getsetMethodList.add(methodPart);
 				
 				MethodBean methodBean = new MethodBean();
