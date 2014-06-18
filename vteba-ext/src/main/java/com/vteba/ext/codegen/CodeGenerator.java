@@ -28,9 +28,14 @@ import com.vteba.utils.common.CamelCaseUtils;
  * date 2013-8-31 上午12:38:09
  */
 public class CodeGenerator {
-	static VelocityEngine velocityEngine;
+static VelocityEngine velocityEngine;
+	
+	//********项目的跟路径，这个参数需要调整**********//
+	static String projectRootPath = "C:\\Users\\zy\\git\\vteba\\vteba\\";
+	//********项目的跟路径，这个参数需要调整**********//
+	
 	static {
-		String templateBasePath = "D:\\git\\vteba\\vteba\\template";
+		String templateBasePath = projectRootPath + "template";
 		Properties properties = new Properties();
 		properties.setProperty(Velocity.RESOURCE_LOADER, "file");
 		properties.setProperty("file.resource.loader.description", "Velocity File Resource Loader");
@@ -50,20 +55,20 @@ public class CodeGenerator {
 	 * date 2013-8-30 下午11:52:37
 	 */
 	public static void main(String[] args) {
-		if (args == null || args.length != 5) {
-			return;
-		}
-//		String schema = "skmbw";//数据库schema
-//		String className = "Category";//实体类，类名
-//		String tableName = "商品分类";//实体类对应的表的注释名
-//		String pk = "Long";//String Long Integer，主键类型
-//		String module = "home.index";//模块名
+		//**************调整这五个参数的值 start**************//
 		
-		String schema = args[0];//数据库schema
-		String className = args[1];//实体类，类名
-		String tableName = args[2];//实体类对应的表的注释名
-		String pk = args[3];//String Long Integer，主键类型
-		String module = args[4];//模块名
+		String schema = "skmbw";//数据库schema
+		String className = "Gaga";//实体类，类名
+		String tableName = "商品分类";//实体类对应的表的注释名
+		String pk = "Long";//String Long Integer，主键类型
+		String module = "home.gaga";//模块名（包名的一部分）
+		
+		boolean genDao = true;
+		boolean genService = true;//（依赖dao）
+		boolean genAction = true;//（依赖service）
+		boolean genMapper = true;
+		//**************调整这五个参数的值 end**************//
+		
 		
 		String fullPack = "com.vteba." + module + ".model." + className;
 		Class<?> clazz = null;
@@ -90,17 +95,17 @@ public class CodeGenerator {
 		context.put("currentDate", DateFormat.getDateTimeInstance().format(new Date()));
 
 		//String rootPath = "/home/yinlei/downloads/vteba/";
-		String rootPath = "D:\\git\\vteba\\vteba\\";
+		String rootPath = projectRootPath;
 		
 		String srcPath = "src/main/java/";
 		
 		String parentPackagePath = "com/vteba/";
 		
-//		String actionTemplateName = "Action.java";
-//		String daoTemplateName = "Dao.java";
-//		String daoImplTemplateName = "DaoImpl.java";
-//		String serviceTemplateName = "Service.java";
-//		String serviceImplTemplateName = "ServiceImpl.java";
+		String actionTemplateName = "Action.java";
+		String daoTemplateName = "Dao.java";
+		String daoImplTemplateName = "DaoImpl.java";
+		String serviceTemplateName = "Service.java";
+		String serviceImplTemplateName = "ServiceImpl.java";
 		String mapperTemplateName = "Mapper.java";
 		
 		//String classPath = parentPackagePath + pgk + "dao/mapper/" + className;
@@ -124,13 +129,23 @@ public class CodeGenerator {
 		}
 		context.put("methodList", methodList);
 		
-		//generateFile(context, actionTemplateName, targetJavaFile + "action/" + className);
-		//generateFile(context, daoTemplateName, targetJavaFile + "dao/spi/" + className);
-		//generateFile(context, daoImplTemplateName, targetJavaFile + "dao/impl/" + className);
-		//generateFile(context, serviceTemplateName, targetJavaFile + "service/spi/" + className);
-		//generateFile(context, serviceImplTemplateName, targetJavaFile + "service/impl/" + className);
+		//*********************如果不想产生某种类型的文件，请注释掉**************************//
+		if (genDao) {
+			generateFile(context, daoTemplateName, targetJavaFile + "dao/spi/" + className);//dao接口
+			generateFile(context, daoImplTemplateName, targetJavaFile + "dao/impl/" + className);//dao实现（不能单独产生）
+		}
+		if (genService) {
+			generateFile(context, serviceTemplateName, targetJavaFile + "service/spi/" + className);//service接口
+			generateFile(context, serviceImplTemplateName, targetJavaFile + "service/impl/" + className);//service实现（不能单独产生）
+		}
+		if (genAction) {
+			generateFile(context, actionTemplateName, targetJavaFile + "action/" + className);//action
+		}
 		
-		generateFile(context, mapperTemplateName, targetJavaFile + "dao/mapper/" + className);
+		if (genMapper) {
+			generateFile(context, mapperTemplateName, targetJavaFile + "dao/mapper/" + className);//mybatis mapper
+		}
+		//*********************如果不想产生某种类型的文件，请注释掉**************************//
 	}
 
 	/**
@@ -159,7 +174,7 @@ public class CodeGenerator {
 			writer.close();
 			fos.close();
 		} catch (Exception e) {
-			
+			System.err.println(e.getMessage());
 		}
 	}
 	
@@ -191,4 +206,5 @@ public class CodeGenerator {
 			methodBean.setRsName("getByte(\"" + underLine + "\")");
 		}
 	}
+	
 }
