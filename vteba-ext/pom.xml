@@ -38,6 +38,12 @@
     </dependency>
     
     <dependency>
+    	<groupId>com.vteba</groupId> 
+    	<artifactId>vteba-utils</artifactId>
+    	<version>1.0.1</version>
+    </dependency>
+    
+    <dependency>
     	<groupId>org.mongodb</groupId>
     	<artifactId>mongo-java-driver</artifactId>
     	<version>2.11.3</version>
