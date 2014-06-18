@@ -6,7 +6,13 @@ import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.List;
 
+import org.apache.commons.lang3.StringUtils;
+
+import com.vteba.ext.codegen.model.MethodPart;
+import com.vteba.utils.common.CamelCaseUtils;
 import com.vteba.utils.common.PropertiesLoader;
 import com.vteba.utils.cryption.DESUtils;
 
@@ -53,7 +59,29 @@ public class DatabaseModelBuilder {
 				int types = metaData.getColumnType(i);
 				String columnName = metaData.getColumnName(i);
 				String columnClazzName = metaData.getColumnClassName(i);
-				System.out.println(columnClazzName);
+				
+				//头部导入
+				List<String> importList = new ArrayList<String>();
+				
+				if (!columnClazzName.startsWith("java.lang.")) {
+					importList.add(columnClazzName);
+				}
+				
+				//定义的filed
+				List<String> fieldList = new ArrayList<String>();
+				
+				String fieldType = columnClazzName.substring(columnClazzName.lastIndexOf("\\."));
+				
+				String fieldName = CamelCaseUtils.toCamelCase(columnName);
+				fieldList.add("private " + fieldType + " " + fieldName + ";");
+				
+				//getter setter
+				List<MethodPart> methodList = new ArrayList<>();
+				MethodPart methodPart = new MethodPart();
+				methodPart.setFieldType(fieldType);
+				methodPart.setMethodName(StringUtils.capitalize(fieldName));
+				methodPart.setMethodParam(fieldName);
+				methodList.add(methodPart);
 			}
 			rs.close();
 		} catch (SQLException e) {
