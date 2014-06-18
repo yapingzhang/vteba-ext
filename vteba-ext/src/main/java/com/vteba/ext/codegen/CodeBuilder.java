@@ -8,9 +8,7 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.sql.Timestamp;
 import java.text.DateFormat;
-import java.util.ArrayList;
 import java.util.Date;
-import java.util.List;
 import java.util.Properties;
 
 import org.apache.commons.lang3.StringUtils;
@@ -19,7 +17,6 @@ import org.apache.velocity.VelocityContext;
 import org.apache.velocity.app.Velocity;
 import org.apache.velocity.app.VelocityEngine;
 
-import com.vteba.lang.bytecode.MethodAccess;
 import com.vteba.utils.common.CamelCaseUtils;
 
 /**
@@ -234,7 +231,10 @@ public class CodeBuilder {
 //		if (genMapper) {
 //			generateFile(context, mapperTemplateName, targetJavaFile + "dao/mapper/" + className);//mybatis mapper
 //		}
-		//*********************如果不想产生某种类型的文件，请注释掉**************************//
+		
+		if (genMapper) {
+			generateFile(context, mapperTemplateName, targetJavaFile + "dao/mapper/" + className);//mybatis mapper
+		}
 	}
 	
 	/**

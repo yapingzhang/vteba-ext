@@ -1,12 +1,16 @@
 package com.vteba.ext.codegen;
 
+import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.sql.Timestamp;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
@@ -80,6 +84,8 @@ public class DatabaseModelBuilder {
 			//getter setter
 			List<MethodPart> getsetMethodList = new ArrayList<>();
 			
+			List<MethodBean> methodList = new ArrayList<>();
+			
 			for (int i = 1; i <= columnCount; i++) {
 				//int types = metaData.getColumnType(i);
 				String columnName = metaData.getColumnName(i);
@@ -96,13 +102,20 @@ public class DatabaseModelBuilder {
 				
 				MethodPart methodPart = new MethodPart();
 				methodPart.setFieldType(fieldType);
-				methodPart.setMethodName(StringUtils.capitalize(fieldName));
+				String capFieldName = StringUtils.capitalize(fieldName);
+				methodPart.setMethodName(capFieldName);
 				methodPart.setMethodParam(fieldName);
 				getsetMethodList.add(methodPart);
+				
+				MethodBean methodBean = new MethodBean();
+				methodBean.setMethodName("set" + capFieldName);
+				match(methodBean, columnClazzName, columnName);
+				methodList.add(methodBean);
 			}
 			velocityContext.put("importList", importList);
 			velocityContext.put("fieldList", fieldList);
 			velocityContext.put("getsetMethodList", getsetMethodList);
+			velocityContext.put("methodList", methodList);
 			rs.close();
 		} catch (SQLException e) {
 			System.err.println(e.getMessage());
@@ -112,6 +125,34 @@ public class DatabaseModelBuilder {
 			conn.close();
 		} catch (SQLException e) {
 			e.printStackTrace();
+		}
+	}
+	
+	public void match(MethodBean methodBean, String type, String field) {
+		if (type.equals("java.lang.Integer") || type.equals(int.class.getName())) {
+			methodBean.setRsName("getInt(\"" + field + "\")");
+		} else if (type.equals(Long.class.getName()) || type.equals(long.class.getName())) {
+			methodBean.setRsName("getLong(\"" + field + "\")");
+		} else if (type.equals(String.class.getName())) {
+			methodBean.setRsName("getString(\"" + field + "\")");
+		} else if (type.equals(Double.class.getName())) {
+			methodBean.setRsName("getDouble(\"" + field + "\")");
+		} else if (type.equals(Timestamp.class.getName())) {
+			methodBean.setRsName("getTimestamp(\"" + field + "\")");
+		} else if (type.equals(Date.class.getName()) || type.equals("java.sql.Date")) {
+			methodBean.setRsName("getDate(\"" + field + "\")");
+		} else if (type.equals(Boolean.class.getName()) || type.equals(boolean.class.getName())) {
+			methodBean.setRsName("getBoolean(\"" + field + "\")");
+		} else if (type.equals(BigInteger.class.getName())) {
+			methodBean.setRsName("getBigDecimal(\"" + field + "\").toBigInteger()");
+		} else if (type.equals(BigDecimal.class.getName())) {
+			methodBean.setRsName("getBigDecimal(\"" + field + "\")");
+		} else if (type.equals(Float.class.getName()) || type.equals(float.class.getName())) {
+			methodBean.setRsName("getFloat(\"" + field + "\")");
+		} else if (type.equals(Short.class.getName()) || type.equals(short.class.getName())) {
+			methodBean.setRsName("getShort(\"" + field + "\")");
+		} else if (type.equals(Byte.class.getName()) || type.equals(byte.class.getName())) {
+			methodBean.setRsName("getByte(\"" + field + "\")");
 		}
 	}
 	
