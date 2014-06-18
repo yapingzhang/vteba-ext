@@ -232,7 +232,7 @@ public class CodeBuilder {
 //			generateFile(context, mapperTemplateName, targetJavaFile + "dao/mapper/" + className);//mybatis mapper
 //		}
 		
-		if (genMapper) {
+		if (genMapper && tableName != null) {
 			generateFile(context, mapperTemplateName, targetJavaFile + "dao/mapper/" + className);//mybatis mapper
 		}
 	}
