@@ -6,6 +6,9 @@ import java.io.FileOutputStream;
 import java.io.OutputStreamWriter;
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.net.URL;
+import java.security.CodeSource;
+import java.security.ProtectionDomain;
 import java.sql.Timestamp;
 import java.text.DateFormat;
 import java.util.Date;
@@ -41,11 +44,41 @@ public class CodeBuilder {
 	 */
 	public CodeBuilder(String rootPath) {
 		this.rootPath = rootPath;
-		String templateBasePath = rootPath + "template";
+		//String templateBasePath = rootPath + "template";
 		Properties properties = new Properties();
-		properties.setProperty(Velocity.RESOURCE_LOADER, "file");
-		properties.setProperty("file.resource.loader.description", "Velocity File Resource Loader");
-		properties.setProperty(Velocity.FILE_RESOURCE_LOADER_PATH, templateBasePath);
+		//properties.setProperty(Velocity.RESOURCE_LOADER, "file");
+		//properties.setProperty(Velocity.RESOURCE_LOADER, "classpath");
+		
+//		//设置velocity资源加载方式为jar
+//		properties.setProperty(Velocity.RESOURCE_LOADER, "jar");
+//		//设置velocity资源加载方式为file时的处理类
+//        properties.setProperty("jar.resource.loader.class", "org.apache.velocity.runtime.resource.loader.JarResourceLoader");
+//        //设置jar包所在的位置
+//        properties.setProperty("jar.resource.loader.path", "jar:file:WEB-INF/lib/vteba-ext-1.0.1.jar");
+        
+        ProtectionDomain domain = getClass().getProtectionDomain();
+		CodeSource codeSource = domain.getCodeSource();
+		URL location = codeSource.getLocation();
+		String path = location.getPath();
+		//System.out.println(path);
+		
+//		URL url = getClass().getClassLoader().getResource("log4j.xml");
+//		String aurl = url.getPath();
+//		System.out.println(aurl);
+//
+//		URL pathUrl = getClass().getResource("");
+//		System.out.println(pathUrl.getPath());
+//		
+//		URL pathUrl2 = getClass().getResource("/");
+//		System.out.println(pathUrl2.getPath());
+		
+//        //设置velocity资源加载方式为class
+//        properties.setProperty("resource.loader", "class");
+//        //设置velocity资源加载方式为file时的处理类
+//        properties.setProperty("class.resource.loader.class", "org.apache.velocity.runtime.resource.loader.ClasspathResourceLoader");
+        
+		//properties.setProperty("file.resource.loader.description", "Velocity File Resource Loader");
+		properties.setProperty(Velocity.FILE_RESOURCE_LOADER_PATH, path + "/template");
 		properties.setProperty(Velocity.FILE_RESOURCE_LOADER_CACHE, "true");
 		properties.setProperty("file.resource.loader.modificationCheckInterval", "30");
 		properties.setProperty(Velocity.RUNTIME_LOG_LOGSYSTEM_CLASS, "org.apache.velocity.runtime.log.Log4JLogChute");
@@ -257,7 +290,7 @@ public class CodeBuilder {
 			if (!file.exists()) {
 				new File(file.getParent()).mkdirs();
 			}
-
+			
 			Template template = velocityEngine.getTemplate(templateName, "UTF-8");
 			FileOutputStream fos = new FileOutputStream(file);
 			BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(fos, "UTF-8"));

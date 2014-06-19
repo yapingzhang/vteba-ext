@@ -6,7 +6,7 @@ import com.vteba.ext.codegen.KeyType;
 public class TestCoder {
 
 	public static void main(String[] args) {
-		String rootPath = "C:\\Users\\zy\\git\\vteba-ext\\vteba-ext\\";
+		String rootPath = "D:\\Documents\\GitHub\\vteba-ext\\vteba-ext\\";
 		CodeBuilder builder = new CodeBuilder(rootPath);
 		builder.schema("skmbw")
 		.className("EmpUser")

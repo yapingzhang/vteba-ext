@@ -148,6 +148,8 @@ public class DatabaseModelBuilder {
 			methodBean.setRsName("getTimestamp(\"" + field + "\")");
 		} else if (type.equals("java.util.Date") || type.equals("java.sql.Date")) {
 			methodBean.setRsName("getDate(\"" + field + "\")");
+		} else if (type.equals("java.sql.Timestamp")) {
+			methodBean.setRsName("getTimestamp(\"" + field + "\")");
 		} else if (type.equals("java.lang.Boolean") || type.equals("boolean")) {
 			methodBean.setRsName("getBoolean(\"" + field + "\")");
 		} else if (type.equals("java.math.BigInteger")) {
