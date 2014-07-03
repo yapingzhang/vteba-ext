@@ -13,7 +13,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.velocity.VelocityContext;
 
 import com.vteba.ext.codegen.model.MethodPart;
-import com.vteba.utils.common.CamelCaseUtils;
+import com.vteba.utils.common.CaseUtils;
 import com.vteba.utils.common.PropertiesLoader;
 import com.vteba.utils.cryption.DESUtils;
 
@@ -99,7 +99,7 @@ public class DatabaseModelBuilder {
 				
 				String fieldType = columnClazzName.substring(columnClazzName.lastIndexOf(".") + 1);
 				
-				String fieldName = CamelCaseUtils.toCamelCase(columnName);
+				String fieldName = CaseUtils.toCamelCase(columnName);
 				fieldList.add("private " + fieldType + " " + fieldName + ";");
 				
 				MethodPart methodPart = new MethodPart();

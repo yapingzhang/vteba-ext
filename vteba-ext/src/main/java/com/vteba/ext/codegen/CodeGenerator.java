@@ -20,7 +20,7 @@ import org.apache.velocity.app.Velocity;
 import org.apache.velocity.app.VelocityEngine;
 
 import com.vteba.lang.bytecode.MethodAccess;
-import com.vteba.utils.common.CamelCaseUtils;
+import com.vteba.utils.common.CaseUtils;
 
 /**
  * 产生Dao和Service的代码引擎。
@@ -186,7 +186,7 @@ static VelocityEngine velocityEngine;
 	}
 	
 	public static void matchResultSet(MethodBean methodBean, Class<?> clazz) {
-		String underLine = CamelCaseUtils.toUnderScoreCase(methodBean.getMethodName().substring(3));
+		String underLine = CaseUtils.underCase(methodBean.getMethodName().substring(3));
 		if (clazz == Integer.class || clazz == Integer.TYPE) {
 			methodBean.setRsName("getInt(\"" + underLine + "\")");
 		} else if (clazz == Long.class || clazz == Long.TYPE) {

@@ -20,7 +20,7 @@ import org.apache.velocity.VelocityContext;
 import org.apache.velocity.app.Velocity;
 import org.apache.velocity.app.VelocityEngine;
 
-import com.vteba.utils.common.CamelCaseUtils;
+import com.vteba.utils.common.CaseUtils;
 
 /**
  * 代码生成器builder。
@@ -305,7 +305,7 @@ public class CodeBuilder {
 	}
 	
 	public void matchResultSet(MethodBean methodBean, Class<?> clazz) {
-		String underLine = CamelCaseUtils.toUnderScoreCase(methodBean.getMethodName().substring(3));
+		String underLine = CaseUtils.underCase(methodBean.getMethodName().substring(3));
 		if (clazz == Integer.class || clazz == Integer.TYPE) {
 			methodBean.setRsName("getInt(\"" + underLine + "\")");
 		} else if (clazz == Long.class || clazz == Long.TYPE) {
