@@ -1,6 +1,6 @@
 package com.vteba.${packages}.service.spi;
 
-import com.vteba.service.generic.IGenericService;
+import com.vteba.service.generic.BaseService;
 import com.vteba.${packages}.model.${className};
 
 /**
@@ -8,6 +8,6 @@ import com.vteba.${packages}.model.${className};
  * @author yinlei
  * date ${currentDate}
  */
-public interface ${className}Service extends IGenericService<${className}, ${pk}> {
+public interface ${className}Service extends BaseService<${className}, ${pk}> {
 	
 }

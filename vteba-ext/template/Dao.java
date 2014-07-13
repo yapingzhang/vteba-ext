@@ -1,6 +1,6 @@
 package com.vteba.${packages}.dao.spi;
 
-import com.vteba.tm.hibernate.IHibernateGenericDao;
+import com.vteba.tm.hibernate.BaseGenericDao;
 import com.vteba.${packages}.model.${className};
 
 /**
@@ -8,6 +8,6 @@ import com.vteba.${packages}.model.${className};
  * @author yinlei
  * date ${currentDate}
  */
-public interface ${className}Dao extends IHibernateGenericDao<${className}, ${pk}> {
+public interface ${className}Dao extends BaseGenericDao<${className}, ${pk}> {
 
 }
