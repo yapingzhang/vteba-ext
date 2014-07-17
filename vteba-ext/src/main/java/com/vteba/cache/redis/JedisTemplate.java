@@ -1555,6 +1555,7 @@ public class JedisTemplate {
 	/**
 	 * 切换到指定的数据库，数据库索引号 index从0 开始。
 	 * 默认使用 0 号数据库。
+	 * @param index 数据库索引号，从0开始
 	 */
 	public String select(final int index) {
 		return execute(new JedisAction<String>() {
