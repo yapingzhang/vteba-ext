@@ -15,12 +15,12 @@ public class KryoRedisSerializer<T> implements RedisSerializer<T> {
 
 	@Override
 	public byte[] serialize(T t) throws SerializationException {
-		return Kryos.get().serialize(t);
+		return Kryos.serialize(t);
 	}
 
 	@Override
 	public T deserialize(byte[] bytes) throws SerializationException {
-		return Kryos.get().deserialize(bytes);
+		return Kryos.deserialize(bytes);
 	}
 
 }

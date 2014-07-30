@@ -1610,7 +1610,7 @@ public class JedisTemplate {
 
 			@Override
 			public String action(Jedis jedis) {
-				return jedis.set(key.getBytes(Char.UTF8), Kryos.get().serialize(object));
+				return jedis.set(key.getBytes(Char.UTF8), Kryos.serialize(object));
 			}
 		});
 	}
@@ -1627,7 +1627,7 @@ public class JedisTemplate {
 
 			@Override
 			public String action(Jedis jedis) {
-				return jedis.setex(key.getBytes(Char.UTF8), seconds, Kryos.get().serialize(object));
+				return jedis.setex(key.getBytes(Char.UTF8), seconds, Kryos.serialize(object));
 			}
 		});
 	}
@@ -1644,7 +1644,7 @@ public class JedisTemplate {
 
 			@Override
 			public Long action(Jedis jedis) {
-				return jedis.hset(key.getBytes(Char.UTF8), field.getBytes(Char.UTF8), Kryos.get().serialize(object));
+				return jedis.hset(key.getBytes(Char.UTF8), field.getBytes(Char.UTF8), Kryos.serialize(object));
 			}
 		});
 	}
@@ -1662,7 +1662,7 @@ public class JedisTemplate {
 			public String action(Jedis jedis) {
 				Map<byte[], byte[]> hash = new HashMap<byte[], byte[]>();
 				for (Entry<String, Object> entry : map.entrySet()) {
-					hash.put(entry.getKey().getBytes(Char.UTF8), Kryos.get().serialize(entry.getValue()));
+					hash.put(entry.getKey().getBytes(Char.UTF8), Kryos.serialize(entry.getValue()));
 				}
 				return jedis.hmset(key.getBytes(Char.UTF8), hash);
 			}
@@ -1681,7 +1681,7 @@ public class JedisTemplate {
 			@Override
 			public T action(Jedis jedis) {
 				byte[] bytes = jedis.get(key.getBytes(Char.UTF8));
-				return Kryos.get().deserialize(bytes);
+				return Kryos.deserialize(bytes);
 			}
 		});
 	}
@@ -1701,7 +1701,7 @@ public class JedisTemplate {
 				List<byte[]> list = jedis.mget(keyBytes);
 				List<T> rstList = new ArrayList<T>();
 				for (byte[] bytes : list) {
-					T t = Kryos.get().deserialize(bytes);
+					T t = Kryos.deserialize(bytes);
 					rstList.add(t);
 				}
 				return rstList;
@@ -1723,7 +1723,7 @@ public class JedisTemplate {
 				List<byte[]> list = jedis.hvals(key.getBytes(Char.UTF8));
 				List<T> rstList = new ArrayList<T>();
 				for (byte[] bytes : list) {
-					T t = Kryos.get().deserialize(bytes);
+					T t = Kryos.deserialize(bytes);
 					rstList.add(t);
 				}
 				return rstList;
@@ -1745,7 +1745,7 @@ public class JedisTemplate {
 				Map<byte[], byte[]> map = jedis.hgetAll(key.getBytes(Char.UTF8));
 				List<T> rstList = new ArrayList<T>();
 				for (Entry<byte[], byte[]> entry : map.entrySet()) {
-					T t = Kryos.get().deserialize(entry.getValue());
+					T t = Kryos.deserialize(entry.getValue());
 					rstList.add(t);
 				}
 				return rstList;
@@ -1784,7 +1784,7 @@ public class JedisTemplate {
 				Set<byte[]> set = jedis.smembers(key.getBytes(Char.UTF8));
 				List<T> rstList = new ArrayList<T>();
 				for (byte[] bytes : set) {
-					T t = Kryos.get().deserialize(bytes);
+					T t = Kryos.deserialize(bytes);
 					rstList.add(t);
 				}
 				return rstList;
