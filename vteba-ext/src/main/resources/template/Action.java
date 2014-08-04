@@ -1,6 +1,5 @@
 package com.vteba.${packages}.action;
 
-import java.io.Serializable;
 import java.util.List;
 
 import javax.inject.Inject;
@@ -11,9 +10,9 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.vteba.${packages}.model.${className};
 import com.vteba.${packages}.service.spi.${className}Service;
-import com.vteba.service.generic.IGenericService;
+import com.vteba.service.generic.BaseService;
 import com.vteba.tx.generic.Page;
-import com.vteba.web.action.BaseAction;
+import com.vteba.web.action.BasicAction;
 
 /**
  * ${tableName}控制器
@@ -22,7 +21,7 @@ import com.vteba.web.action.BaseAction;
  */
 @Controller
 @RequestMapping("/${smallClassName}")
-public class ${className}Action extends BaseAction<${className}> {
+public class ${className}Action extends BasicAction<${className}> {
 	@Inject
 	private ${className}Service ${smallClassName}ServiceImpl;
 	
@@ -43,7 +42,7 @@ public class ${className}Action extends BaseAction<${className}> {
 	}
 	
 	@Override
-    public void setGenericServiceImpl(IGenericService<${className}, ? extends Serializable> ${smallClassName}ServiceImpl) {
+    public void setBaseServiceImpl(BaseService<${className}, ?> ${smallClassName}ServiceImpl) {
         this.${smallClassName}ServiceImpl = (${className}Service) ${smallClassName}ServiceImpl;
     }
 }
