@@ -93,7 +93,10 @@ public class DatabaseModelBuilder {
 				String columnClazzName = metaData.getColumnClassName(i);
 				
 				if (!columnClazzName.startsWith("java.lang.")) {
-					importList.add("import " + columnClazzName + ";");
+				    if (columnClazzName.equals("java.sql.Timestamp")) {
+				        columnClazzName = "java.util.Date";
+				    }
+				    importList.add("import " + columnClazzName + ";");
 				}
 				
 				String fieldType = columnClazzName.substring(columnClazzName.lastIndexOf(".") + 1);

@@ -10,7 +10,7 @@ import javax.persistence.Table;
 import com.vteba.common.model.AstModel;
 
 @Entity
-@Table(name = "roles", catalog = "skmbw")
+@Table(name = "${table}", catalog = "${schema}")
 public class ${className} implements AstModel {
 
 	private static final long serialVersionUID = 3391739370239888528L;
