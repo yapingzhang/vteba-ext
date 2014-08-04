@@ -35,10 +35,9 @@ public class ${className}Action extends BaseAction<${className}> {
 	@ResponseBody
 	@RequestMapping("/list")
 	public List<${className}> list(${className} model) {
-		String hql = "select g from ${className} g ";
 		Page<${className}> page = new Page<${className}>();
 		page.setPageSize(10);
-		List<${className}> list = ${smallClassName}ServiceImpl.pagedQueryByHql(page, hql);
+		List<${className}> list = ${smallClassName}ServiceImpl.pagedQueryList(page, model);
 		return list;
 	}
 	
