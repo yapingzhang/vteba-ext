@@ -28,13 +28,13 @@ import com.vteba.utils.common.CaseUtils;
  * @date 2013-6-18
  */
 public class CodeBuilder {
-	private String rootPath;
-	private String schema;
-	private String className;
-	private String tableDesc;
-	private KeyType keyType;
-	private String module;
-	private String tableName;
+	private String rootPath;// 项目根路径
+	private String schema;// 数据库schema
+	private String className;// 要生成的实体类名
+	private String tableDesc;// 实体注释
+	private KeyType keyType;// 主键类型
+	private String module;// 属于哪个模块
+	private String tableName;// 表名
 	
 	private VelocityEngine velocityEngine;
 	

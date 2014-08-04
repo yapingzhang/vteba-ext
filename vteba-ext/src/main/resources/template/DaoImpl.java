@@ -5,8 +5,8 @@ import javax.inject.Named;
 
 import org.hibernate.SessionFactory;
 
-import com.vteba.tm.hibernate.impl.BaseGenericDaoImpl;
-import com.vteba.tm.jdbc.spring.SpringJdbcTemplate;
+import com.vteba.tx.hibernate.impl.BaseGenericDaoImpl;
+import com.vteba.tx.jdbc.spring.SpringJdbcTemplate;
 import com.vteba.${packages}.dao.spi.${className}Dao;
 import com.vteba.${packages}.model.${className};
 

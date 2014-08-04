@@ -1,5 +1,6 @@
 package com.vteba.${packages}.action;
 
+import java.io.Serializable;
 import java.util.List;
 
 import javax.inject.Inject;
@@ -10,7 +11,8 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.vteba.${packages}.model.${className};
 import com.vteba.${packages}.service.spi.${className}Service;
-import com.vteba.tm.generic.Page;
+import com.vteba.service.generic.IGenericService;
+import com.vteba.tx.generic.Page;
 import com.vteba.web.action.BaseAction;
 
 /**
@@ -20,7 +22,7 @@ import com.vteba.web.action.BaseAction;
  */
 @Controller
 @RequestMapping("/${smallClassName}")
-public class ${className}Action extends BaseAction {
+public class ${className}Action extends BaseAction<${className}> {
 	@Inject
 	private ${className}Service ${smallClassName}ServiceImpl;
 	
@@ -40,4 +42,9 @@ public class ${className}Action extends BaseAction {
 		List<${className}> list = ${smallClassName}ServiceImpl.pagedQueryByHql(page, hql);
 		return list;
 	}
+	
+	@Override
+    public void setGenericServiceImpl(IGenericService<${className}, ? extends Serializable> ${smallClassName}ServiceImpl) {
+        this.${smallClassName}ServiceImpl = (${className}Service) ${smallClassName}ServiceImpl;
+    }
 }

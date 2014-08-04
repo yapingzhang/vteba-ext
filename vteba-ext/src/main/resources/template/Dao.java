@@ -1,6 +1,6 @@
 package com.vteba.${packages}.dao.spi;
 
-import com.vteba.tm.hibernate.BaseGenericDao;
+import com.vteba.tx.hibernate.BaseGenericDao;
 import com.vteba.${packages}.model.${className};
 
 /**

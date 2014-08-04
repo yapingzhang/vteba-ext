@@ -15,7 +15,6 @@ import org.apache.velocity.VelocityContext;
 import com.vteba.ext.codegen.model.MethodPart;
 import com.vteba.utils.common.CaseUtils;
 import com.vteba.utils.common.PropertiesLoader;
-import com.vteba.utils.cryption.DESUtils;
 
 public class DatabaseModelBuilder {
 	private PropertiesLoader loader;
@@ -26,7 +25,7 @@ public class DatabaseModelBuilder {
 	private boolean pojo = true;
 	
 	public DatabaseModelBuilder(String rootPath) {
-		String propPath = rootPath + "src\\main\\resources\\jndi.properties";
+		String propPath = rootPath + "src\\main\\resources\\config.properties";
 		loader = new PropertiesLoader(propPath);
 		try {
 			Class.forName("com.mysql.jdbc.Driver");
@@ -34,12 +33,12 @@ public class DatabaseModelBuilder {
 			System.err.println(e.getMessage());
 		}
 		
-		url = loader.getProperty("jdbc.skmbwurl");
+		url = loader.getProperty("jdbc.url");
 		user = loader.getProperty("jdbc.username");
 		password = loader.getProperty("jdbc.password");
 		
-		user = DESUtils.getDecryptString(user);
-		password = DESUtils.getDecryptString(password);
+		//user = DESUtils.getDecrypt(user);
+		//password = DESUtils.getDecrypt(password);
 		
 	}
 	
