@@ -36,6 +36,12 @@ public class CodeBuilder {
 	private String module;// 属于哪个模块
 	private String tableName;// 表名
 	
+	private boolean genDao = true;
+	private boolean genService = true;//（依赖dao）
+	private boolean genAction = true;//（依赖service）
+	private boolean genMapper = true;
+	private boolean genModel = true;
+	
 	private VelocityEngine velocityEngine;
 	
 	/**
@@ -147,14 +153,30 @@ public class CodeBuilder {
 		return this;
 	}
 	
-	/**
+    public void setGenDao(boolean genDao) {
+        this.genDao = genDao;
+    }
+    
+    public void setGenService(boolean genService) {
+        this.genService = genService;
+    }
+    
+    public void setGenAction(boolean genAction) {
+        this.genAction = genAction;
+    }
+    
+    public void setGenMapper(boolean genMapper) {
+        this.genMapper = genMapper;
+    }
+    
+    public void setGenModel(boolean genModel) {
+        this.genModel = genModel;
+    }
+
+    /**
 	 * 生成代码。
 	 */
 	public void build() {
-		boolean genDao = true;
-		boolean genService = true;//（依赖dao）
-		boolean genAction = true;//（依赖service）
-		boolean genMapper = true;
 		
 		if (schema == null) {
 			System.err.println("schema为空，请调用schema(String schema)方法设置schema。");
@@ -185,6 +207,7 @@ public class CodeBuilder {
 		context.put("className", className);
 		context.put("tableName", tableDesc);
 		context.put("pk", keyType.name());
+		context.put("table", tableName);
 		
 		String smallClassName = StringUtils.uncapitalize(className);
 		context.put("smallClassName", smallClassName);
@@ -227,7 +250,7 @@ public class CodeBuilder {
 			generateFile(context, actionTemplateName, targetJavaFile + "action/" + className);//action
 		}
 		
-		if (tableName != null) {
+		if (tableName != null && genModel) {
 			new DatabaseModelBuilder("file:" + rootPath).setTableName(tableName).buildParam(context);
 			generateFile(context, modelTemplateName, targetJavaFile + "model/" + className);//model
 		}
