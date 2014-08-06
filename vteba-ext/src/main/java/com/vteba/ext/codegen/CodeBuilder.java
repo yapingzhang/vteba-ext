@@ -42,13 +42,16 @@ public class CodeBuilder {
 	private boolean genMapper = true;
 	private boolean genModel = true;
 	
+	private DB db;// 数据库类型
+	private String configFilePath;
+	
 	private VelocityEngine velocityEngine;
 	
 	/**
 	 * 使用项目路径构造CodeBuilder。
 	 * @param rootPath 项目根路径
 	 */
-	public CodeBuilder(String rootPath) {
+	public CodeBuilder(String rootPath, Temp template) {
 		this.rootPath = rootPath;
 		//String templateBasePath = rootPath + "template";
 		Properties properties = new Properties();
@@ -84,6 +87,11 @@ public class CodeBuilder {
 //        properties.setProperty("class.resource.loader.class", "org.apache.velocity.runtime.resource.loader.ClasspathResourceLoader");
         
 		//properties.setProperty("file.resource.loader.description", "Velocity File Resource Loader");
+		if (template == Temp.Generic) {
+		    path = path + "/tempgen";
+		} else if (template == Temp.Base) {
+		    
+		}
 		properties.setProperty(Velocity.FILE_RESOURCE_LOADER_PATH, path + "/template");
 		properties.setProperty(Velocity.FILE_RESOURCE_LOADER_CACHE, "true");
 		properties.setProperty("file.resource.loader.modificationCheckInterval", "30");
@@ -153,26 +161,82 @@ public class CodeBuilder {
 		return this;
 	}
 	
-    public void setGenDao(boolean genDao) {
+	/**
+     * 是否产生Dao文件
+     * @param genModel true或false
+     * @return <b>this</b>
+     */
+    public CodeBuilder setGenDao(boolean genDao) {
         this.genDao = genDao;
+        return this;
     }
     
-    public void setGenService(boolean genService) {
+    /**
+     * 是否产生Service文件，依赖于Dao
+     * @param genModel true或false
+     * @return <b>this</b>
+     */
+    public CodeBuilder setGenService(boolean genService) {
+        if (!genDao) {
+            throw new IllegalArgumentException("Service依赖于Dao，请生成Dao文件，调用setGenDao(true);");
+        }
         this.genService = genService;
+        return this;
     }
     
-    public void setGenAction(boolean genAction) {
+    /**
+     * 是否产生Action文件，依赖于Service
+     * @param genModel true或false
+     * @return <b>this</b>
+     */
+    public CodeBuilder setGenAction(boolean genAction) {
+        if (!genService) {
+            throw new IllegalArgumentException("Action依赖于Servcie，请生成Service文件，调用setGenService(true);");
+        }
         this.genAction = genAction;
+        return this;
     }
     
-    public void setGenMapper(boolean genMapper) {
+    /**
+     * 是否产生Mybatis Mapper文件
+     * @param genModel true或false
+     * @return <b>this</b>
+     */
+    public CodeBuilder setGenMapper(boolean genMapper) {
         this.genMapper = genMapper;
+        return this;
     }
     
-    public void setGenModel(boolean genModel) {
+    /**
+     * 是否产生模型文件
+     * @param genModel true或false
+     * @return <b>this</b>
+     */
+    public CodeBuilder setGenModel(boolean genModel) {
         this.genModel = genModel;
+        return this;
     }
 
+    /**
+     * 设置数据库类型，支持mysql和oracle
+     * @param db 数据库类型
+     * @return <b>this</b>
+     */
+    public CodeBuilder setDb(DB db) {
+        this.db = db;
+        return this;
+    }
+    
+    /**
+     * 设置jdbc配置文件路径，和rootPath要构成一个完整的路径。
+     * @param configFilePath 配置文件路径
+     * @return <b>this</b>
+     */
+    public CodeBuilder setConfigFilePath(String configFilePath) {
+        this.configFilePath = configFilePath;
+        return this;
+    }
+    
     /**
 	 * 生成代码。
 	 */
@@ -251,7 +315,8 @@ public class CodeBuilder {
 		}
 		
 		if (tableName != null && genModel) {
-			new DatabaseModelBuilder("file:" + rootPath).setTableName(tableName).buildParam(context);
+			DatabaseModelBuilder builder = new DatabaseModelBuilder("file:" + rootPath, configFilePath);
+			builder.setDb(db).setTableName(tableName).buildParam(context);
 			generateFile(context, modelTemplateName, targetJavaFile + "model/" + className);//model
 		}
 		

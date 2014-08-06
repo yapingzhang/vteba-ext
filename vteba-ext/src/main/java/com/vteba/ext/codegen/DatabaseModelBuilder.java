@@ -23,29 +23,48 @@ public class DatabaseModelBuilder {
 	private String password;
 	private String tableName;
 	private boolean pojo = true;
+	private DB db;
+//	private String configFilePath;
+//	private String rootPath;
 	
-	public DatabaseModelBuilder(String rootPath) {
-		String propPath = rootPath + "src\\main\\resources\\config.properties";
-		loader = new PropertiesLoader(propPath);
-		try {
-			Class.forName("com.mysql.jdbc.Driver");
-		} catch (ClassNotFoundException e) {
-			System.err.println(e.getMessage());
-		}
+	public DatabaseModelBuilder(String rootPath, String configFilePath) {
+//		this.rootPath = rootPath;
+//		this.configFilePath = configFilePath;
 		
-		url = loader.getProperty("jdbc.url");
-		user = loader.getProperty("jdbc.username");
-		password = loader.getProperty("jdbc.password");
-		
-		//user = DESUtils.getDecrypt(user);
-		//password = DESUtils.getDecrypt(password);
-		
+		String propPath = rootPath + configFilePath;
+        loader = new PropertiesLoader(propPath);
+        try {
+            if (db == DB.MySQL) {
+                Class.forName("com.mysql.jdbc.Driver");
+            } else if (db == DB.Oracle) {
+                Class.forName("oracle.jdbc.driver.OracleDriver");
+            }
+        } catch (ClassNotFoundException e) {
+            System.err.println(e.getMessage());
+        }
+        
+        url = loader.getProperty("jdbc.url");
+        user = loader.getProperty("jdbc.username");
+        password = loader.getProperty("jdbc.password");
+        
+        //user = DESUtils.getDecrypt(user);
+        //password = DESUtils.getDecrypt(password);
 	}
 	
 	public DatabaseModelBuilder setTableName(String tableName) {
 		this.tableName = tableName;
 		return this;
 	}
+	
+	public DatabaseModelBuilder setDb(DB db) {
+	    this.db = db;
+	    return this;
+	}
+	
+//	public DatabaseModelBuilder setConfigPath(String configFilePath) {
+//	    this.configFilePath = configFilePath;
+//	    return this;
+//	}
 	
 	public DatabaseModelBuilder setPojo(boolean pojo) {
 		this.pojo = pojo;
