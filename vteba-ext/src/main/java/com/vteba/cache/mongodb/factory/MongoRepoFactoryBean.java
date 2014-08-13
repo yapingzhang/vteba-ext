@@ -1,4 +1,4 @@
-package com.vteba.ext.mongodb.factory;
+package com.vteba.cache.mongodb.factory;
 
 import java.io.Serializable;
 

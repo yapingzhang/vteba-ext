@@ -1,4 +1,4 @@
-package com.vteba.ext.mongodb.factory;
+package com.vteba.cache.mongodb.factory;
 
 import java.io.Serializable;
 
@@ -7,7 +7,7 @@ import org.springframework.data.mongodb.repository.query.MongoEntityInformation;
 import org.springframework.data.mongodb.repository.support.MongoRepositoryFactory;
 import org.springframework.data.repository.core.RepositoryMetadata;
 
-import com.vteba.ext.mongodb.impl.MongoGenericDaoImpl;
+import com.vteba.cache.mongodb.impl.MongoGenericDaoImpl;
 
 /**
  * 定制化的Mongodb Repository Factory

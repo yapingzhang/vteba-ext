@@ -1,4 +1,4 @@
-package com.vteba.ext.mongodb.impl;
+package com.vteba.cache.mongodb.impl;
 
 import static org.springframework.data.mongodb.core.query.Criteria.where;
 
@@ -20,7 +20,7 @@ import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.repository.query.MongoEntityInformation;
 import org.springframework.util.Assert;
 
-import com.vteba.ext.mongodb.spi.MongoGenericDao;
+import com.vteba.cache.mongodb.spi.MongoGenericDao;
 
 /**
  * Mongodb泛型接口抽象实现
@@ -37,10 +37,10 @@ public class MongoGenericDaoImpl<T, ID extends Serializable> implements MongoGen
 	}
 	
 	/**
-	 * Creates a ew {@link MongoGenericDaoImpl} for the given {@link MongoEntityInformation} and {@link MongoTemplate}.
+	 * 为指定的 {@link MongoEntityInformation} 实体信息和 {@link MongoTemplate} Mongo模板，创建一个新的 {@link MongoGenericDaoImpl}。
 	 * 
-	 * @param metadata must not be {@literal null}.
-	 * @param template must not be {@literal null}.
+	 * @param metadata 实体原数据，不能为空
+	 * @param template Mongo操作模板，不能为空
 	 */
 	public MongoGenericDaoImpl(MongoEntityInformation<T, ID> metadata, MongoOperations mongoOperations) {
 
@@ -156,9 +156,9 @@ public class MongoGenericDaoImpl<T, ID extends Serializable> implements MongoGen
 	}
 
 	/**
-	 * Returns the underlying {@link MongoOperations} instance.
+	 * 获得底层的 {@link MongoOperations} 实例
 	 * 
-	 * @return
+	 * @return {@link MongoOperations} 实例
 	 */
 	public MongoOperations getMongoOperations() {
 		return this.mongoOperations;
@@ -169,15 +169,15 @@ public class MongoGenericDaoImpl<T, ID extends Serializable> implements MongoGen
 	}
 
 	/**
-	 * @return the entityInformation
+	 * @return 实体信息
 	 */
 	protected MongoEntityInformation<T, ID> getEntityInformation() {
 		return entityInformation;
 	}
 	
-	public void update(T entity) {
-		
-	}
+//	public void update(T entity) {
+//		
+//	}
 
 	public T get(ID id, Class<T> entityClass) {
 		return mongoOperations.findById(id, entityClass);
