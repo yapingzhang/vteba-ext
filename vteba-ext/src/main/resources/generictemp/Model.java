@@ -1,16 +1,22 @@
-package com.vteba.${packages}.model;
+package ${packages}.model;
 
 #foreach($c in $importList)
 ${c}
 #end
-
+#if($pojo == false)
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Table;
-
+#end
 import com.vteba.common.model.AstModel;
 
+#foreach($c in $annotationList)
+${c}
+#end
+#if($pojo == false)
 @Entity
 @Table(name = "${table}", catalog = "${schema}")
+#end
 public class ${className} implements AstModel {
 
 	private static final long serialVersionUID = 3391739370239888528L;
@@ -23,7 +29,12 @@ ${c}
 	}
 	
 	#foreach($c in $getsetMethodList)
-public ${c.fieldType} get${c.methodName}() {
+#if($c.annotations)
+#foreach($an in $c.annotations)
+${an}
+#end
+#end
+    public ${c.fieldType} get${c.methodName}() {
 		return this.${c.methodParam};
 	}
 

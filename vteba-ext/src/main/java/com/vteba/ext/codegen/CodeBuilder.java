@@ -41,6 +41,9 @@ public class CodeBuilder {
 	private boolean genAction = true;//（依赖service）
 	private boolean genMapper = true;
 	private boolean genModel = true;
+	private boolean mongo = false;// 产生mongodb dao
+	
+	private boolean pojo = true;
 	
 	private DB db;// 数据库类型
 	private String configFilePath;
@@ -51,7 +54,7 @@ public class CodeBuilder {
 	 * 使用项目路径构造CodeBuilder。
 	 * @param rootPath 项目根路径
 	 */
-	public CodeBuilder(String rootPath, Temp template) {
+	public CodeBuilder(String rootPath, TempType template) {
 		this.rootPath = rootPath;
 		//String templateBasePath = rootPath + "template";
 		Properties properties = new Properties();
@@ -87,12 +90,12 @@ public class CodeBuilder {
 //        properties.setProperty("class.resource.loader.class", "org.apache.velocity.runtime.resource.loader.ClasspathResourceLoader");
         
 		//properties.setProperty("file.resource.loader.description", "Velocity File Resource Loader");
-		if (template == Temp.Generic) {
-		    path = path + "/tempgen";
-		} else if (template == Temp.Base) {
-		    
+		if (template == TempType.Generic) {
+		    path = path + "/generictemp";
+		} else if (template == TempType.Base) {
+		    path = path + "/basetemplate";
 		}
-		properties.setProperty(Velocity.FILE_RESOURCE_LOADER_PATH, path + "/template");
+		properties.setProperty(Velocity.FILE_RESOURCE_LOADER_PATH, path);
 		properties.setProperty(Velocity.FILE_RESOURCE_LOADER_CACHE, "true");
 		properties.setProperty("file.resource.loader.modificationCheckInterval", "30");
 		properties.setProperty(Velocity.RUNTIME_LOG_LOGSYSTEM_CLASS, "org.apache.velocity.runtime.log.Log4JLogChute");
@@ -162,6 +165,15 @@ public class CodeBuilder {
 	}
 	
 	/**
+	 * 设置是否pojo
+	 * @param pojo true是，false否
+	 */
+    public CodeBuilder setPojo(boolean pojo) {
+        this.pojo = pojo;
+        return this;
+    }
+
+    /**
      * 是否产生Dao文件
      * @param genModel true或false
      * @return <b>this</b>
@@ -207,6 +219,15 @@ public class CodeBuilder {
         return this;
     }
     
+    /**
+     * 是否产生mongo的dao文件
+     * @param mongo true是
+     */
+    public CodeBuilder setMongo(boolean mongo) {
+        this.mongo = mongo;
+        return this;
+    }
+
     /**
      * 是否产生模型文件
      * @param genModel true或false
@@ -287,7 +308,8 @@ public class CodeBuilder {
 		
 		String srcPath = "src/main/java/";
 		
-		String parentPackagePath = "com/vteba/";
+		//String parentPackagePath = "com/vteba/";
+		String parentPackagePath = "";
 		
 		String actionTemplateName = "Action.java";
 		String daoTemplateName = "Dao.java";
@@ -296,6 +318,7 @@ public class CodeBuilder {
 		String serviceImplTemplateName = "ServiceImpl.java";
 		String mapperTemplateName = "Mapper.java";
 		String modelTemplateName = "Model.java";
+		String mongoTemplateName = "MongoDao.java";
 		
 		//String classPath = parentPackagePath + pgk + "dao/mapper/" + className;
 		
@@ -306,6 +329,9 @@ public class CodeBuilder {
 			generateFile(context, daoTemplateName, targetJavaFile + "dao/spi/" + className);//dao接口
 			generateFile(context, daoImplTemplateName, targetJavaFile + "dao/impl/" + className);//dao实现（不能单独产生）
 		}
+		if (mongo) {
+            generateFile(context, mongoTemplateName, targetJavaFile + "dao/spi/" + className);//mongo dao接口
+        }
 		if (genService) {
 			generateFile(context, serviceTemplateName, targetJavaFile + "service/spi/" + className);//service接口
 			generateFile(context, serviceImplTemplateName, targetJavaFile + "service/impl/" + className);//service实现（不能单独产生）
@@ -316,7 +342,8 @@ public class CodeBuilder {
 		
 		if (tableName != null && genModel) {
 			DatabaseModelBuilder builder = new DatabaseModelBuilder("file:" + rootPath, configFilePath);
-			builder.setDb(db).setTableName(tableName).buildParam(context);
+			builder.setDb(db).setTableName(tableName)
+			.setPojo(pojo).setMongo(mongo).buildParam(context);
 			generateFile(context, modelTemplateName, targetJavaFile + "model/" + className);//model
 		}
 		

@@ -1,13 +1,16 @@
 package com.vteba.ext.codegen;
 
 import java.sql.Connection;
+import java.sql.DatabaseMetaData;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.velocity.VelocityContext;
@@ -24,6 +27,7 @@ public class DatabaseModelBuilder {
 	private String tableName;
 	private boolean pojo = true;
 	private DB db;
+	private boolean mongo = false;
 //	private String configFilePath;
 //	private String rootPath;
 	
@@ -61,10 +65,10 @@ public class DatabaseModelBuilder {
 	    return this;
 	}
 	
-//	public DatabaseModelBuilder setConfigPath(String configFilePath) {
-//	    this.configFilePath = configFilePath;
-//	    return this;
-//	}
+	public DatabaseModelBuilder setMongo(boolean mongo) {
+	    this.mongo = mongo;
+	    return this;
+	}
 	
 	public DatabaseModelBuilder setPojo(boolean pojo) {
 		this.pojo = pojo;
@@ -93,6 +97,14 @@ public class DatabaseModelBuilder {
 		String sql = "select * from " + tableName + " where 1 = 2";
 		
 		try {
+		    DatabaseMetaData dsmetaData = conn.getMetaData();
+		    ResultSet keyResultSet = dsmetaData.getPrimaryKeys(null, null, tableName);
+		    List<String> keyList = getPrimaryKey(keyResultSet);
+		    //dsmetaData.getColumns(null, null, tableName, null);
+		    
+		    ResultSet indexResultSet = dsmetaData.getIndexInfo(null, null, tableName, false, true);
+		    Set<String> indexInfoSet = getIndexInfo(indexResultSet);
+		    
 			ResultSet rs = stmt.executeQuery(sql);
 			ResultSetMetaData metaData = rs.getMetaData();
 			int columnCount = metaData.getColumnCount();
@@ -105,6 +117,17 @@ public class DatabaseModelBuilder {
 			List<MethodPart> getsetMethodList = new ArrayList<>();
 			
 			List<MethodBean> methodList = new ArrayList<>();
+			
+			List<String> annotationList = new ArrayList<String>();
+			
+			if (mongo) {
+                annotationList.add("@Document");
+                importList.add("import org.springframework.data.mongodb.core.mapping.Document;");
+            }
+			
+			if (!pojo) {
+                importList.add("import javax.persistence.Column;");
+            }
 			
 			for (int i = 1; i <= columnCount; i++) {
 				//int types = metaData.getColumnType(i);
@@ -130,7 +153,38 @@ public class DatabaseModelBuilder {
 				methodPart.setMethodParam(fieldName);
 				
 				if (!pojo) {// 如果不是pojo，那么使用jpa的注解
-					methodPart.setAnnotation("");
+				    boolean nullable = metaData.isNullable(i) == 1 ? true : false;
+				    int length = metaData.getColumnDisplaySize(i);
+				    int precision = metaData.getPrecision(i);
+				    int scale = metaData.getScale(i);
+				    
+				    if (keyList.contains(columnName)) {
+				        if (keyList.size() >= 2) {
+				            methodPart.addAnnotation("//联合主键，请自行设定");
+				        } else {
+				            methodPart.addAnnotation("@Id");
+				            importList.add("import javax.persistence.Id;");
+				        }
+				    }
+				    
+				    if (!nullable) {// 是否可空
+				        
+				    }
+				    
+				    if (indexInfoSet.contains(columnName)) {// 是否是唯一索引
+				        
+				    }
+				    
+				    if (fieldType.equals("String")) {
+				        methodPart.addAnnotation("@Column(name = \"" + columnName + "\" length = " + length + ")");
+				    } else if (fieldType.equals("Date")) {
+				        methodPart.addAnnotation("@Temporal(TemporalType.DATE)");
+				        methodPart.addAnnotation("@Column(name = \"" + columnName + "\" length = " + length + ")");
+				    } else if (fieldType.equals("Double")) {
+				        methodPart.addAnnotation("@Column(name = \"" + columnName + "\", precision = " + precision + ", scale = " + scale + ")");
+				    } else {
+				        methodPart.addAnnotation("@Column(name = \"" + columnName + "\")");
+				    }
 				}
 				
 				getsetMethodList.add(methodPart);
@@ -144,6 +198,8 @@ public class DatabaseModelBuilder {
 			velocityContext.put("fieldList", fieldList);
 			velocityContext.put("getsetMethodList", getsetMethodList);
 			velocityContext.put("methodList", methodList);
+			velocityContext.put("annotationList", annotationList);
+			velocityContext.put("pojo", pojo);
 			rs.close();
 		} catch (SQLException e) {
 			System.err.println(e.getMessage());
@@ -155,6 +211,46 @@ public class DatabaseModelBuilder {
 			e.printStackTrace();
 		}
 	}
+	
+	public List<String> getPrimaryKey(ResultSet rs) {
+	    List<String> keyList = new ArrayList<String>();
+	    String key = null;
+	    try {
+            for (;rs.next();) {
+//                System.out.print(rs.getObject("TABLE_CAT")+" ");
+//                System.out.print(rs.getObject("TABLE_SCHEM")+" ");
+//                System.out.print(rs.getObject("TABLE_NAME")+" ");
+//                System.out.print(rs.getObject("COLUMN_NAME")+" ");
+//                System.out.print(rs.getObject("KEY_SEQ")+" ");
+                key = rs.getString("PK_NAME");
+                if (key != null) {
+                    keyList.add(key);
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+	    return keyList;
+	}
+	
+	public Set<String> getIndexInfo(ResultSet rs) {
+        Set<String> sets = new HashSet<String>();
+        String columnName = null;
+        try {
+            for (;rs.next();) {
+                boolean nonUnique = rs.getBoolean("NON_UNIQUE");
+                if (!nonUnique) {
+                    columnName = rs.getString("COLUMN_NAME");
+                    if (columnName != null) {
+                        sets.add(columnName);
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return sets;
+    }
 	
 	public void match(MethodBean methodBean, String type, String field) {
 		if (type.equals("java.lang.Integer") || type.equals("int")) {

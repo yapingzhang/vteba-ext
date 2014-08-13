@@ -1,7 +1,7 @@
-package com.vteba.${packages}.dao.spi;
+package ${packages}.dao.spi;
 
 import com.vteba.tx.hibernate.IHibernateGenericDao;
-import com.vteba.${packages}.model.${className};
+import ${packages}.model.${className};
 
 /**
  * ${tableName}Dao接口。

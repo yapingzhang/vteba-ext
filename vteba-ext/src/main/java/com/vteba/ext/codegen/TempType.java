@@ -1,5 +1,5 @@
 package com.vteba.ext.codegen;
 
-public enum Temp {
+public enum TempType {
     Generic, Base, Basic
 }

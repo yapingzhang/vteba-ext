@@ -1,4 +1,4 @@
-package com.vteba.${packages}.action;
+package ${packages}.action;
 
 import java.io.Serializable;
 import java.util.List;
@@ -9,8 +9,8 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 
-import com.vteba.${packages}.model.${className};
-import com.vteba.${packages}.service.spi.${className}Service;
+import ${packages}.model.${className};
+import ${packages}.service.spi.${className}Service;
 import com.vteba.service.generic.IGenericService;
 import com.vteba.tx.generic.Page;
 import com.vteba.web.action.BaseAction;

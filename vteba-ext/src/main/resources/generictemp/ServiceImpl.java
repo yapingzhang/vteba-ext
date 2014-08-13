@@ -1,13 +1,13 @@
-package com.vteba.${packages}.service.impl;
+package ${packages}.service.impl;
 
 import javax.inject.Inject;
 import javax.inject.Named;
 
 import com.vteba.service.generic.impl.GenericServiceImpl;
 import com.vteba.tx.hibernate.IHibernateGenericDao;
-import com.vteba.${packages}.dao.spi.${className}Dao;
-import com.vteba.${packages}.model.${className};
-import com.vteba.${packages}.service.spi.${className}Service;
+import ${packages}.dao.spi.${className}Dao;
+import ${packages}.model.${className};
+import ${packages}.service.spi.${className}Service;
 
 /**
  * ${tableName}Service实现。

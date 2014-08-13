@@ -28,7 +28,7 @@ import com.vteba.utils.common.CaseUtils;
  * date 2013-8-31 上午12:38:09
  */
 public class CodeGenerator {
-static VelocityEngine velocityEngine;
+    static VelocityEngine velocityEngine;
 	
 	//********项目的跟路径，这个参数需要调整**********//
 	static String projectRootPath = "C:\\Users\\zy\\git\\vteba\\vteba\\";

@@ -1,11 +1,14 @@
 package com.vteba.ext.codegen.model;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class MethodPart {
 	private String methodName;
 	private String methodParam;
 	private String methodBody;
 	private String fieldType;
-	private String annotation;
+	private List<String> annotations;
 
 	public String getMethodName() {
 		return methodName;
@@ -39,12 +42,18 @@ public class MethodPart {
 		this.fieldType = fieldType;
 	}
 
-	public String getAnnotation() {
-		return annotation;
+	public List<String> getAnnotations() {
+		return annotations;
 	}
 
-	public void setAnnotation(String annotation) {
-		this.annotation = annotation;
+	public void setAnnotations(List<String> annotations) {
+		this.annotations = annotations;
 	}
 
+	public void addAnnotation(String annotation) {
+	    if (annotations == null) {
+	        annotations = new ArrayList<String>();
+	    }
+	    annotations.add(annotation);
+	}
 }
