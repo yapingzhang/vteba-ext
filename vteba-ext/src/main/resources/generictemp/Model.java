@@ -4,10 +4,10 @@ package ${packages}.model;
 ${c}
 #end
 #if($pojo == false)
-import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Table;
 #end
+
 import com.vteba.common.model.AstModel;
 
 #foreach($c in $annotationList)
@@ -27,6 +27,16 @@ ${c}
 	
 	public ${className}() {
 	}
+	
+	#set($size = $getsetMethodList.size())
+public ${className}(#foreach($c in $getsetMethodList)#if($velocityCount != 1), #end${c.fieldType} ${c.methodParam}#end) {
+        super();
+	    #foreach($c in $getsetMethodList)
+#if($velocityCount == 1)
+this.${c.methodParam} = ${c.methodParam};
+	#else
+	this.${c.methodParam} = ${c.methodParam};
+	#end#end}
 	
 	#foreach($c in $getsetMethodList)
 #if($c.annotations)

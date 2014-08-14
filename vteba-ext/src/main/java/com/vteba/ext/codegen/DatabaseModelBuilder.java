@@ -28,12 +28,10 @@ public class DatabaseModelBuilder {
 	private boolean pojo = true;
 	private DB db;
 	private boolean mongo = false;
-//	private String configFilePath;
-//	private String rootPath;
+	private String schema;
+	private String catalog;
 	
 	public DatabaseModelBuilder(String rootPath, String configFilePath) {
-//		this.rootPath = rootPath;
-//		this.configFilePath = configFilePath;
 		
 		String propPath = rootPath + configFilePath;
         loader = new PropertiesLoader(propPath);
@@ -75,6 +73,16 @@ public class DatabaseModelBuilder {
 		return this;
 	}
 	
+	public DatabaseModelBuilder setSchema(String schema) {
+        this.schema = schema;
+        return this;
+    }
+	
+	public DatabaseModelBuilder setCatalog(String catalog) {
+        this.catalog = catalog;
+        return this;
+    }
+	
 	public void buildParam(VelocityContext velocityContext) {
 		if (tableName == null) {
 			System.err.println("tableName不能为空，请设置。");
@@ -98,11 +106,11 @@ public class DatabaseModelBuilder {
 		
 		try {
 		    DatabaseMetaData dsmetaData = conn.getMetaData();
-		    ResultSet keyResultSet = dsmetaData.getPrimaryKeys(null, null, tableName);
+		    ResultSet keyResultSet = dsmetaData.getPrimaryKeys(catalog, schema, tableName);
 		    List<String> keyList = getPrimaryKey(keyResultSet);
 		    //dsmetaData.getColumns(null, null, tableName, null);
 		    
-		    ResultSet indexResultSet = dsmetaData.getIndexInfo(null, null, tableName, false, true);
+		    ResultSet indexResultSet = dsmetaData.getIndexInfo(catalog, schema, tableName, false, true);
 		    Set<String> indexInfoSet = getIndexInfo(indexResultSet);
 		    
 			ResultSet rs = stmt.executeQuery(sql);
@@ -110,7 +118,7 @@ public class DatabaseModelBuilder {
 			int columnCount = metaData.getColumnCount();
 			
 			//头部导入
-			List<String> importList = new ArrayList<String>();
+			Set<String> importSets = new HashSet<String>();
 			//定义的filed
 			List<String> fieldList = new ArrayList<String>();
 			//getter setter
@@ -122,11 +130,11 @@ public class DatabaseModelBuilder {
 			
 			if (mongo) {
                 annotationList.add("@Document");
-                importList.add("import org.springframework.data.mongodb.core.mapping.Document;");
+                importSets.add("import org.springframework.data.mongodb.core.mapping.Document;");
             }
 			
 			if (!pojo) {
-                importList.add("import javax.persistence.Column;");
+                importSets.add("import javax.persistence.Column;");
             }
 			
 			for (int i = 1; i <= columnCount; i++) {
@@ -138,7 +146,7 @@ public class DatabaseModelBuilder {
 				    if (columnClazzName.equals("java.sql.Timestamp")) {
 				        columnClazzName = "java.util.Date";
 				    }
-				    importList.add("import " + columnClazzName + ";");
+				    importSets.add("import " + columnClazzName + ";");
 				}
 				
 				String fieldType = columnClazzName.substring(columnClazzName.lastIndexOf(".") + 1);
@@ -158,32 +166,47 @@ public class DatabaseModelBuilder {
 				    int precision = metaData.getPrecision(i);
 				    int scale = metaData.getScale(i);
 				    
-				    if (keyList.contains(columnName)) {
-				        if (keyList.size() >= 2) {
-				            methodPart.addAnnotation("//联合主键，请自行设定");
+				    if (keyList.contains(columnName)) {// 是否主键
+				        if (keyList.size() != 1) {
+				            methodPart.addAnnotation("//联合主键，或者没有主键，请自行设定");
 				        } else {
 				            methodPart.addAnnotation("@Id");
-				            importList.add("import javax.persistence.Id;");
+				            methodPart.addAnnotation("\t@Column(name = \"" + columnName + "\", unique = true, nullable = false, length = " + length + ")");
+				            importSets.add("import javax.persistence.Id;");
 				        }
-				    }
-				    
-				    if (!nullable) {// 是否可空
-				        
-				    }
-				    
-				    if (indexInfoSet.contains(columnName)) {// 是否是唯一索引
-				        
-				    }
-				    
-				    if (fieldType.equals("String")) {
-				        methodPart.addAnnotation("@Column(name = \"" + columnName + "\" length = " + length + ")");
-				    } else if (fieldType.equals("Date")) {
-				        methodPart.addAnnotation("@Temporal(TemporalType.DATE)");
-				        methodPart.addAnnotation("@Column(name = \"" + columnName + "\" length = " + length + ")");
-				    } else if (fieldType.equals("Double")) {
-				        methodPart.addAnnotation("@Column(name = \"" + columnName + "\", precision = " + precision + ", scale = " + scale + ")");
 				    } else {
-				        methodPart.addAnnotation("@Column(name = \"" + columnName + "\")");
+				        StringBuilder sb = new StringBuilder("@Column(name = \"");
+				        sb.append(columnName).append("\"");
+				        
+				        if (!nullable) {
+				            sb.append(", nullable = false");
+				        }
+				        
+				        if (indexInfoSet.contains(columnName)) {// 唯一索引
+				            sb.append(", unique = true");
+				        }
+				        
+				        if (fieldType.equals("String")) {
+				            sb.append(", length = ").append(length).append(")");
+	                        methodPart.addAnnotation(sb.toString());
+	                    } else if (fieldType.equals("Date")) {
+	                        methodPart.addAnnotation("@Temporal(TemporalType.DATE)");
+	                        sb.append(", length = ").append(length).append(")");
+	                        methodPart.addAnnotation("\t" + sb.toString());
+	                        
+	                        importSets.add("import javax.persistence.Temporal;");
+	                        importSets.add("import javax.persistence.TemporalType;");
+	                        
+	                    } else if (fieldType.equals("Double") || fieldType.equals("BigDecimal")) {
+	                        sb.append(", precision = ").append(precision).append(", scale = ").append(scale).append(")");
+	                        methodPart.addAnnotation(sb.toString());
+	                    } else if (fieldType.equals("Long") || fieldType.equals("Integer")) {
+	                        sb.append(", length = ").append(length).append(")");
+	                        methodPart.addAnnotation(sb.toString());
+	                    } else {
+	                        sb.append(")");
+                            methodPart.addAnnotation(sb.toString());
+	                    }
 				    }
 				}
 				
@@ -194,7 +217,7 @@ public class DatabaseModelBuilder {
 				match(methodBean, columnClazzName, columnName);
 				methodList.add(methodBean);
 			}
-			velocityContext.put("importList", importList);
+			velocityContext.put("importList", importSets);
 			velocityContext.put("fieldList", fieldList);
 			velocityContext.put("getsetMethodList", getsetMethodList);
 			velocityContext.put("methodList", methodList);
@@ -217,12 +240,12 @@ public class DatabaseModelBuilder {
 	    String key = null;
 	    try {
             for (;rs.next();) {
-//                System.out.print(rs.getObject("TABLE_CAT")+" ");
-//                System.out.print(rs.getObject("TABLE_SCHEM")+" ");
-//                System.out.print(rs.getObject("TABLE_NAME")+" ");
-//                System.out.print(rs.getObject("COLUMN_NAME")+" ");
-//                System.out.print(rs.getObject("KEY_SEQ")+" ");
-                key = rs.getString("PK_NAME");
+//                System.out.print(rs.getString("TABLE_CAT"));
+//                System.out.print(rs.getString("TABLE_SCHEM"));
+//                System.out.print(rs.getString("TABLE_NAME"));
+//                System.out.print(rs.getString("PK_NAME"));
+//                System.out.print(rs.getShort("KEY_SEQ"));
+                key = rs.getString("COLUMN_NAME");
                 if (key != null) {
                     keyList.add(key);
                 }

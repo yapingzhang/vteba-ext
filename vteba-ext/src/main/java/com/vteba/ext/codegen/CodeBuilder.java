@@ -30,6 +30,7 @@ import com.vteba.utils.common.CaseUtils;
 public class CodeBuilder {
 	private String rootPath;// 项目根路径
 	private String schema;// 数据库schema
+	private String catalog;// 数据库catalog
 	private String className;// 要生成的实体类名
 	private String tableDesc;// 实体注释
 	private KeyType keyType;// 主键类型
@@ -53,6 +54,7 @@ public class CodeBuilder {
 	/**
 	 * 使用项目路径构造CodeBuilder。
 	 * @param rootPath 项目根路径
+	 * @param template 模板类型
 	 */
 	public CodeBuilder(String rootPath, TempType template) {
 		this.rootPath = rootPath;
@@ -109,64 +111,101 @@ public class CodeBuilder {
 //		this.rootPath = rootPath;
 //		return this;
 //	}
-//	
-//	public String rootPath() {
-//		return this.rootPath;
-//	}
 	
+	/**
+	 * 设置数据库catalog
+	 * @param catalog 数据库catalog
+	 * @return <b>this</b>
+	 */
+	public CodeBuilder setCatalog(String catalog) {
+	    this.catalog = catalog;
+		return this;
+	}
+	
+	/**
+     * 设置数据库schema
+     * @param schema 数据库schema
+     * @return <b>this</b>
+     */
 	public CodeBuilder schema(String schema) {
 		this.schema = schema;
 		return this;
 	}
 	
-	public String schema() {
-		return this.schema;
-	}
+//	public String schema() {
+//		return this.schema;
+//	}
 	
+	/**
+	 * 设置数据库表映射成的实体类文件名字
+	 * @param className 实体类名
+	 * @return <b>this</b>
+	 */
 	public CodeBuilder className(String className) {
 		this.className = className;
 		return this;
 	}
 	
-	public String className() {
-		return this.className;
-	}
+//	public String className() {
+//		return this.className;
+//	}
 	
+	/**
+	 * 设置表注释
+	 * @param tableDesc 注释语句
+	 * @return <b>this</b>
+	 */
 	public CodeBuilder tableDesc(String tableDesc) {
 		this.tableDesc = tableDesc;
 		return this;
 	}
 	
-	public String tableDesc() {
-		return this.tableDesc;
-	}
+//	public String tableDesc() {
+//		return this.tableDesc;
+//	}
 	
+	/**
+	 * 设置数据库主键类型
+	 * @param keyType 主键类型
+	 * @return <b>this</b>
+	 */
 	public CodeBuilder keyType(KeyType keyType) {
 		this.keyType = keyType;
 		return this;
 	}
 	
-	public KeyType keyType() {
-		return this.keyType;
-	}
+//	public KeyType keyType() {
+//		return this.keyType;
+//	}
 	
+	/**
+	 * 设置该模块的包路径，例如com.vteba.user / com.vteba.finance.account
+	 * @param module 包路径
+	 * @return <b>this</b>
+	 */
 	public CodeBuilder module(String module) {
 		this.module = module;
 		return this;
 	}
 	
-	public String module() {
-		return this.module;
-	}
+//	public String module() {
+//		return this.module;
+//	}
 	
+	/**
+	 * 设置数据库表名
+	 * @param tableName 表名
+	 * @return <b>this</b>
+	 */
 	public CodeBuilder tableName(String tableName) {
 		this.tableName = tableName;
 		return this;
 	}
 	
 	/**
-	 * 设置是否pojo
+	 * 设置是否pojo，true是，false将产生JPA注解
 	 * @param pojo true是，false否
+	 * @return <b>this</b>
 	 */
     public CodeBuilder setPojo(boolean pojo) {
         this.pojo = pojo;
@@ -239,7 +278,7 @@ public class CodeBuilder {
     }
 
     /**
-     * 设置数据库类型，支持mysql和oracle
+     * 设置数据库类型，支持mysql和oracle，PostgreSQL
      * @param db 数据库类型
      * @return <b>this</b>
      */
@@ -328,23 +367,36 @@ public class CodeBuilder {
 		if (genDao) {
 			generateFile(context, daoTemplateName, targetJavaFile + "dao/spi/" + className);//dao接口
 			generateFile(context, daoImplTemplateName, targetJavaFile + "dao/impl/" + className);//dao实现（不能单独产生）
+			System.out.println("DAO文件产生完毕。");
 		}
 		if (mongo) {
             generateFile(context, mongoTemplateName, targetJavaFile + "dao/spi/" + className);//mongo dao接口
+            System.out.println("Mongodb Dao文件产生完毕。");
         }
 		if (genService) {
 			generateFile(context, serviceTemplateName, targetJavaFile + "service/spi/" + className);//service接口
 			generateFile(context, serviceImplTemplateName, targetJavaFile + "service/impl/" + className);//service实现（不能单独产生）
+			System.out.println("Service文件产生完毕。");
 		}
 		if (genAction) {
 			generateFile(context, actionTemplateName, targetJavaFile + "action/" + className);//action
+			System.out.println("Action文件产生完毕。");
 		}
 		
 		if (tableName != null && genModel) {
 			DatabaseModelBuilder builder = new DatabaseModelBuilder("file:" + rootPath, configFilePath);
 			builder.setDb(db).setTableName(tableName)
-			.setPojo(pojo).setMongo(mongo).buildParam(context);
+			.setPojo(pojo).setMongo(mongo)
+			.setCatalog(catalog).setSchema(schema).buildParam(context);
 			generateFile(context, modelTemplateName, targetJavaFile + "model/" + className);//model
+			if (pojo) {
+			    System.out.println("POJO Model文件产生完毕。");
+			} else {
+			    System.out.println("JPA Model文件产生完毕。可能需要调整关联关系和主键。");
+			}
+			if (mongo) {
+                System.out.println("MongoDB Model文件产生完毕。");
+            }
 		}
 		
 		
@@ -382,6 +434,7 @@ public class CodeBuilder {
 		
 		if (genMapper && tableName != null) {
 			generateFile(context, mapperTemplateName, targetJavaFile + "dao/mapper/" + className);//mybatis mapper
+			System.out.println("Spring Jdbc Mapper文件产生完毕。");
 		}
 	}
 	
