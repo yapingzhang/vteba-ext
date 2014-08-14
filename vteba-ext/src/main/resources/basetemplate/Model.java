@@ -15,7 +15,7 @@ ${c}
 #end
 #if($pojo == false)
 @Entity
-@Table(name = "${table}", catalog = "${schema}")
+@Table(name = "${table}"#if(${schema}), schema = "${schema}"#end#if(${catalog}), catalog = "${catalog}"#end)
 #end
 public class ${className} implements AstModel {
 

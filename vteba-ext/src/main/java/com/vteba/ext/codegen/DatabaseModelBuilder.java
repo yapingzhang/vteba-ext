@@ -40,6 +40,8 @@ public class DatabaseModelBuilder {
                 Class.forName("com.mysql.jdbc.Driver");
             } else if (db == DB.Oracle) {
                 Class.forName("oracle.jdbc.driver.OracleDriver");
+            } else if (db == DB.PostgreSQL) {
+                Class.forName("org.postgresql.Driver");
             }
         } catch (ClassNotFoundException e) {
             System.err.println(e.getMessage());
@@ -102,7 +104,15 @@ public class DatabaseModelBuilder {
 			System.err.println(e.getMessage());
 		}
 		
-		String sql = "select * from " + tableName + " where 1 = 2";
+		String sql = "select * from ";
+		if (catalog != null) {
+		    sql += catalog + ".";
+		}
+		if (schema != null) {
+		    sql += schema + ".";
+		}
+		
+		sql += tableName + " where 1 = 2";
 		
 		try {
 		    DatabaseMetaData dsmetaData = conn.getMetaData();

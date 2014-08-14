@@ -328,6 +328,7 @@ public class CodeBuilder {
 		
 		VelocityContext context = new VelocityContext();
 		context.put("schema", schema);
+		context.put("catalog", catalog);
 		context.put("className", className);
 		context.put("tableName", tableDesc);
 		context.put("pk", keyType.name());
