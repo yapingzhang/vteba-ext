@@ -1,11 +1,11 @@
-package com.vteba.${packages}.dao.mapper;
+package ${packages}.dao.mapper;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
 import org.springframework.jdbc.core.RowMapper;
 
-import com.vteba.${packages}.model.${className};
+import ${packages}.model.${className};
 
 /**
  * ${tableName}Mapper

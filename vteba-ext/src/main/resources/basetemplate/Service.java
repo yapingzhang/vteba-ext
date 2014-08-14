@@ -1,7 +1,7 @@
-package com.vteba.${packages}.service.spi;
+package ${packages}.service.spi;
 
 import com.vteba.service.generic.BaseService;
-import com.vteba.${packages}.model.${className};
+import ${packages}.model.${className};
 
 /**
  * ${tableName}service接口。
