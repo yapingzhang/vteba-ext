@@ -19,6 +19,7 @@ import org.apache.velocity.Template;
 import org.apache.velocity.VelocityContext;
 import org.apache.velocity.app.Velocity;
 import org.apache.velocity.app.VelocityEngine;
+import org.apache.velocity.runtime.log.Log4JLogChute;
 
 import com.vteba.utils.common.CaseUtils;
 
@@ -29,6 +30,7 @@ import com.vteba.utils.common.CaseUtils;
  */
 public class CodeBuilder {
 	private String rootPath;// 项目根路径
+	private String srcPath;// 源码路径
 	private String schema;// 数据库schema
 	private String catalog;// 数据库catalog
 	private String className;// 要生成的实体类名
@@ -36,6 +38,8 @@ public class CodeBuilder {
 	private KeyType keyType;// 主键类型
 	private String module;// 属于哪个模块
 	private String tableName;// 表名
+	private TempType template;
+	//private String log4jFilePath;
 	
 	private boolean genDao = true;
 	private boolean genService = true;//（依赖dao）
@@ -45,6 +49,8 @@ public class CodeBuilder {
 	private boolean mongo = false;// 产生mongodb dao
 	
 	private boolean pojo = true;
+	
+	private boolean firstLoad;
 	
 	private DB db;// 数据库类型
 	private String configFilePath;
@@ -58,6 +64,12 @@ public class CodeBuilder {
 	 */
 	public CodeBuilder(String rootPath, TempType template) {
 		this.rootPath = rootPath;
+		this.template = template;
+		
+//		if (log4jFilePath != null) {
+//		    System.setProperty("log4j.configuration", log4jFilePath);
+//		}
+		
 		//String templateBasePath = rootPath + "template";
 		Properties properties = new Properties();
 		//properties.setProperty(Velocity.RESOURCE_LOADER, "file");
@@ -101,18 +113,79 @@ public class CodeBuilder {
 		properties.setProperty(Velocity.FILE_RESOURCE_LOADER_CACHE, "true");
 		properties.setProperty("file.resource.loader.modificationCheckInterval", "30");
 		properties.setProperty(Velocity.RUNTIME_LOG_LOGSYSTEM_CLASS, "org.apache.velocity.runtime.log.Log4JLogChute");
-		properties.setProperty("runtime.log.logsystem.log4j.logger", "org.apache.velocity");
+		properties.setProperty(Log4JLogChute.RUNTIME_LOG_LOG4J_LOGGER, "org.apache.velocity");
 		properties.setProperty("directive.set.null.allowed", "true");
 		velocityEngine = new VelocityEngine();
+
 		velocityEngine.init(properties);
+		
+		try {
+		    velocityEngine.getTemplate("Dao.java");
+		    firstLoad = true;
+        } catch (Exception e) {
+            try {
+                //设置velocity资源加载方式为jar
+                properties.setProperty(Velocity.RESOURCE_LOADER, "jar");
+                //设置velocity资源加载方式为file时的处理类
+                properties.setProperty("jar.resource.loader.class", "org.apache.velocity.runtime.resource.loader.JarResourceLoader");
+                //设置jar包所在的位置
+                String loc = location.getPath();
+                properties.setProperty("jar.resource.loader.path", "jar:file:" + loc);
+                
+                String fileName = "";
+                if (template == TempType.Generic) {
+                    fileName = "generictemp";
+                } else if (template == TempType.Base) {
+                    fileName = "basetemplate";
+                }
+                
+                velocityEngine = new VelocityEngine();
+                velocityEngine.init(properties);
+                velocityEngine.getTemplate(fileName + "/Dao.java");
+            } catch (Exception e2) {
+                try {
+                    //设置velocity资源加载方式为jar
+                    properties.setProperty(Velocity.RESOURCE_LOADER, "jar");
+                    //设置velocity资源加载方式为file时的处理类
+                    properties.setProperty("jar.resource.loader.class", "org.apache.velocity.runtime.resource.loader.JarResourceLoader");
+                    //设置jar包所在的位置
+                    properties.setProperty("jar.resource.loader.path", "jar:file:WebRoot/WEB-INF/lib/vteba-ext-1.0.1.jar");
+                    
+                    velocityEngine = new VelocityEngine();
+                    velocityEngine.init(properties);
+                    
+                    String fileName = "";
+                    if (template == TempType.Generic) {
+                        fileName = "generictemp";
+                    } else if (template == TempType.Base) {
+                        fileName = "basetemplate";
+                    }
+                    
+                    velocityEngine.getTemplate(fileName + "/Dao.java");
+                } catch (Exception e3) {
+                    throw new IllegalStateException("未能成功加载代码模板。");
+                }
+                
+            }
+        }
 	}
 	
-//	public CodeBuilder rootPath(String rootPath) {
-//		this.rootPath = rootPath;
-//		return this;
-//	}
-	
 	/**
+	 * 设置源码位置。例如 src/（普通web项目） 或者 src/main/java/（Maven web项目）
+	 * @param srcPath 源码位置
+	 * @return <b>this</b>
+	 */
+	public CodeBuilder setSrcPath(String srcPath) {
+		this.srcPath = srcPath;
+		return this;
+	}
+	
+//    public CodeBuilder setLog4jFilePath(String log4jFilePath) {
+//        this.log4jFilePath = log4jFilePath;
+//        return this;
+//    }
+
+    /**
 	 * 设置数据库catalog
 	 * @param catalog 数据库catalog
 	 * @return <b>this</b>
@@ -323,8 +396,12 @@ public class CodeBuilder {
 			return;
 		}
 		if (rootPath == null) {
-			System.err.println("rootPath为空，调用构造函数时参数rootPath不能为null。");
+			throw new IllegalStateException("rootPath为空，调用构造函数时参数rootPath不能为null。");
 		}
+		
+		if (srcPath == null) {
+            throw new IllegalStateException("srcPath为空，请设置。");
+        }
 		
 		VelocityContext context = new VelocityContext();
 		context.put("schema", schema);
@@ -346,19 +423,19 @@ public class CodeBuilder {
 		//String rootPath = "/home/yinlei/downloads/vteba/";
 		//String rootPath = projectRootPath;
 		
-		String srcPath = "src/main/java/";
+		String srcPath = this.srcPath;
 		
 		//String parentPackagePath = "com/vteba/";
 		String parentPackagePath = "";
 		
 		String actionTemplateName = "Action.java";
-		String daoTemplateName = "Dao.java";
-		String daoImplTemplateName = "DaoImpl.java";
-		String serviceTemplateName = "Service.java";
-		String serviceImplTemplateName = "ServiceImpl.java";
-		String mapperTemplateName = "Mapper.java";
-		String modelTemplateName = "Model.java";
-		String mongoTemplateName = "MongoDao.java";
+        String daoTemplateName = "Dao.java";
+        String daoImplTemplateName = "DaoImpl.java";
+        String serviceTemplateName = "Service.java";
+        String serviceImplTemplateName = "ServiceImpl.java";
+        String mapperTemplateName = "Mapper.java";
+        String modelTemplateName = "Model.java";
+        String mongoTemplateName = "MongoDao.java";
 		
 		//String classPath = parentPackagePath + pgk + "dao/mapper/" + className;
 		
@@ -400,39 +477,7 @@ public class CodeBuilder {
             }
 		}
 		
-		
 		//*************产生mybatis mapper*******************//
-		
-//		List<MethodBean> methodList = new ArrayList<MethodBean>();
-//
-//		String fullPack = "com.vteba." + module + ".model." + className;
-//		Class<?> clazz = null;
-//		try {
-//			clazz = Class.forName(fullPack);
-//		} catch (ClassNotFoundException e) {
-//			System.err.println(e.getMessage());
-//			return;
-//		}
-//
-//		MethodAccess methodAccess = MethodAccess.get(clazz);
-//		String[] methodNames = methodAccess.getMethodNames();
-//		Class<?>[][] paramTypes = methodAccess.getParameterTypes();
-//		int i = 0;
-//		for (String methodName : methodNames) {
-//			if (methodName.startsWith("set")) {
-//				MethodBean methodBean = new MethodBean();
-//				methodBean.setMethodName(methodName);
-//				matchResultSet(methodBean, paramTypes[i][0]);
-//				methodList.add(methodBean);
-//			}
-//			i++;
-//		}
-//		context.put("methodList", methodList);		
-//		
-//		if (genMapper) {
-//			generateFile(context, mapperTemplateName, targetJavaFile + "dao/mapper/" + className);//mybatis mapper
-//		}
-		
 		if (genMapper && tableName != null) {
 			generateFile(context, mapperTemplateName, targetJavaFile + "dao/mapper/" + className);//mybatis mapper
 			System.out.println("Spring Jdbc Mapper文件产生完毕。");
@@ -460,7 +505,17 @@ public class CodeBuilder {
 				new File(file.getParent()).mkdirs();
 			}
 			
-			Template template = velocityEngine.getTemplate(templateName, "UTF-8");
+			String fileName = templateName;
+			if (!firstLoad) {
+	            if (template == TempType.Generic) {
+	                fileName = "generictemp";
+	            } else if (template == TempType.Base) {
+	                fileName = "basetemplate";
+	            }
+	            fileName = fileName + "/" + templateName;
+	        }
+			
+			Template template = velocityEngine.getTemplate(fileName, "UTF-8");
 			FileOutputStream fos = new FileOutputStream(file);
 			BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(fos, "UTF-8"));
 			template.merge(context, writer);
