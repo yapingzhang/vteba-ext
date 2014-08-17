@@ -47,7 +47,7 @@ public class CodeBuilder {
 	private boolean genMapper = true;
 	private boolean genModel = true;
 	private boolean mongo = false;// 产生mongodb dao
-	
+	private boolean springDao = false;
 	private boolean pojo = true;
 	
 	private boolean firstLoad;
@@ -360,6 +360,16 @@ public class CodeBuilder {
         return this;
     }
     
+	/**
+	 * 设置是否产生spring dao，true是
+	 * @param springDao true是，false否
+	 * @return <b>this</b>
+	 */
+    public CodeBuilder setSpringDao(boolean springDao) {
+        this.springDao = springDao;
+        return this;
+    }
+    
     /**
      * 设置jdbc配置文件路径，和rootPath要构成一个完整的路径。
      * @param configFilePath 配置文件路径
@@ -436,6 +446,8 @@ public class CodeBuilder {
         String mapperTemplateName = "Mapper.java";
         String modelTemplateName = "Model.java";
         String mongoTemplateName = "MongoDao.java";
+        String springDaoTemplate = "SpringDao.java";
+        String springDaoImplTemplate = "SpringDaoImpl.java";
 		
 		//String classPath = parentPackagePath + pgk + "dao/mapper/" + className;
 		
@@ -481,6 +493,12 @@ public class CodeBuilder {
 		if (genMapper && tableName != null) {
 			generateFile(context, mapperTemplateName, targetJavaFile + "dao/mapper/" + className);//mybatis mapper
 			System.out.println("Spring Jdbc Mapper文件产生完毕。");
+		}
+		
+		if (springDao && tableName != null) {
+			generateFile(context, springDaoTemplate, targetJavaFile + "dao/spi/" + className);
+			generateFile(context, springDaoImplTemplate, targetJavaFile + "dao/impl/" + className);
+			System.out.println("Spring Jdbc Dao文件产生完毕。");
 		}
 	}
 	

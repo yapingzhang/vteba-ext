@@ -138,6 +138,8 @@ public class DatabaseModelBuilder {
 			
 			List<String> annotationList = new ArrayList<String>();
 			
+			List<MethodBean> getBeanList = new ArrayList<MethodBean>();
+			
 			if (mongo) {
                 annotationList.add("@Document");
                 importSets.add("import org.springframework.data.mongodb.core.mapping.Document;");
@@ -226,13 +228,21 @@ public class DatabaseModelBuilder {
 				methodBean.setMethodName("set" + capFieldName);
 				match(methodBean, columnClazzName, columnName);
 				methodList.add(methodBean);
+				
+				MethodBean getBean = new MethodBean();
+				getBean.setMethodName("get" + capFieldName + "()");
+				getBean.setColumnName(columnName);
+				getBeanList.add(getBean);
 			}
 			velocityContext.put("importList", importSets);
 			velocityContext.put("fieldList", fieldList);
 			velocityContext.put("getsetMethodList", getsetMethodList);
 			velocityContext.put("methodList", methodList);
+			velocityContext.put("getBeanList", getBeanList);
 			velocityContext.put("annotationList", annotationList);
 			velocityContext.put("pojo", pojo);
+			velocityContext.put("id", CaseUtils.toCapCamelCase(keyList.get(0)));
+			velocityContext.put("idColumn", keyList.get(0));
 			rs.close();
 		} catch (SQLException e) {
 			System.err.println(e.getMessage());
