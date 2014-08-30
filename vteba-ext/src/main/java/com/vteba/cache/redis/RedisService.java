@@ -1,6 +1,5 @@
 package com.vteba.cache.redis;
 
-import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -21,7 +20,7 @@ import org.springframework.data.redis.serializer.RedisSerializer;
  * @param <K> 缓存键类型
  * @param <V> 缓存值类型
  */
-public class RedisService<K extends Serializable, V extends Serializable> {
+public class RedisService<K, V> {
     private static final Logger LOGGER = LoggerFactory.getLogger(RedisService.class);
     
     private RedisTemplate<K, V> redisTemplate;
