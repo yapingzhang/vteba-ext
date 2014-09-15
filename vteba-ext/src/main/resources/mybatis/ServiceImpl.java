@@ -1,10 +1,9 @@
 package com.vteba.user.service.impl;
 
-import java.util.Date;
 import java.util.List;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
+import javax.inject.Inject;
+import javax.inject.Named;
 
 import com.vteba.user.dao.UserDao;
 import com.vteba.user.model.User;
@@ -16,10 +15,10 @@ import com.vteba.user.service.UserService;
  * @author yinlei
  * 2014-2-25 上午11:26:29
  */
-@Service
+@Named
 public class UserServiceImpl implements UserService {
 	
-	@Autowired//将UserDao的实现注入进来，也可以使用setter方法注入
+	@Inject
 	private UserDao userDao;
 
 	@Override
@@ -39,52 +38,11 @@ public class UserServiceImpl implements UserService {
 
 	@Override
 	public int save(User record) {
-	    User user = new User();
-	    user.setId(33L);
-	    Date date = new Date();
-	    user.setCreateDate(date);
-	    user.setUserName("尹雷2");
-	    userDao.updateById(user);
-	    
-	    User params = new User();
-	    params.setUserName("尹雷2");
-	    //params.setCreateDate(date);
-	    params.setState(true);
-	    user.setId(null);
-	    userDao.updateBulks(user, params);
-	    
-	    UserBean userBean = new UserBean();
-	    userBean.createCriteria().andUserAccountEqualTo("yinlei@126.com");
-	    userDao.updateBatch(user, userBean);
-	    
-	    userDao.deleteBatch(userBean);
-	    userDao.deleteBulks(params);
-	    
 		return userDao.save(record);
 	}
 
 	@Override
 	public List<User> queryForList(UserBean userBean) {
-	    User user = new User();
-	    user.setUserName("尹雷");
-	    user.setUserAccount("tong@126.com");
-	    userDao.queryList(user);
-	    
-	    userDao.countBy(user);
-	    
-	    userDao.get(33L);
-	    
-	    User params = new User();
-	    params.setUserName("好好2");
-	    params.setStart(0);
-	    userDao.pagedList(params);
-	    
-	    userBean = new UserBean();
-	    userBean.createCriteria().andUserAccountEqualTo("tong@126.com");
-	    
-	    userDao.count(userBean);
-	    userDao.pagedForList(userBean);
-	    
 		return userDao.queryForList(userBean);
 	}
 
