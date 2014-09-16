@@ -478,9 +478,9 @@ public class CodeBuilder {
         String springDaoTemplate = "SpringDao.java";
         String springDaoImplTemplate = "SpringDaoImpl.java";
         
-        String mybatisServiceTemplate = "Service";
-        String mybatisServiceImplTemplate = "ServiceImpl";
-        String mybatisActionTemplate = "Action";
+        String mybatisServiceTemplate = "Service.java";
+        String mybatisServiceImplTemplate = "ServiceImpl.java";
+        String mybatisActionTemplate = "Action.java";
 		
 		//String classPath = parentPackagePath + pgk + "dao/mapper/" + className;
 		
@@ -573,6 +573,8 @@ public class CodeBuilder {
 	                fileName = "generictemp";
 	            } else if (template == TempType.Base) {
 	                fileName = "basetemplate";
+	            } else if (template == TempType.Mybatis) {
+	                fileName = "mybatis";
 	            }
 	            fileName = fileName + "/" + templateName;
 	        }
