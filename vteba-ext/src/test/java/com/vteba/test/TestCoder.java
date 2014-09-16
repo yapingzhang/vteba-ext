@@ -8,13 +8,19 @@ public class TestCoder {
 
 	public static void main(String[] args) {
 		String rootPath = "D:\\Documents\\GitHub\\vteba-ext\\vteba-ext\\";
-		CodeBuilder builder = new CodeBuilder(rootPath, TempType.Basic);
+		CodeBuilder builder = new CodeBuilder(rootPath, TempType.Mybatis);
 		builder.schema("skmbw")
 		.className("EmpUser")
+		.setSrcPath("src/main/java/")
 		.keyType(KeyType.Integer)
 		.tableDesc("系统用户")
 		.tableName("emp_user")
-		.module("user")
+		.module("com.skmbw.user")
+		.setGenAction(false)
+		.setGenDao(false)
+		.setGenMapper(false)
+		.setGenModel(false)
+		.setGenService(false)
 		.build();
 
 	}

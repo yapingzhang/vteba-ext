@@ -1,94 +1,94 @@
-package com.vteba.user.service.impl;
+package ${packages}.service.impl;
 
 import java.util.List;
 
 import javax.inject.Inject;
 import javax.inject.Named;
 
-import com.vteba.user.dao.UserDao;
-import com.vteba.user.model.User;
-import com.vteba.user.model.UserBean;
-import com.vteba.user.service.UserService;
+import ${packages}.dao.${className}Dao;
+import ${packages}.model.${className};
+import ${packages}.model.${className}Bean;
+import ${packages}.service.spi.${className}Service;
 
 /**
- * 用户service业务实现。
+ * ${tableName}相关的service业务实现。
  * @author yinlei
- * 2014-2-25 上午11:26:29
+ * @date ${currentDate}
  */
 @Named
-public class UserServiceImpl implements UserService {
+public class ${className}ServiceImpl implements ${className}Service {
 	
 	@Inject
-	private UserDao userDao;
+	private ${className}Dao ${smallClassName}Dao;
 
 	@Override
-	public int count(UserBean userBean) {
-		return userDao.count(userBean);
+	public int count(${className}Bean params) {
+		return ${smallClassName}Dao.count(params);
 	}
 
 	@Override
-	public int deleteBatch(UserBean userBean) {
-		return userDao.deleteBatch(userBean);
+	public int deleteBatch(${className}Bean params) {
+		return ${smallClassName}Dao.deleteBatch(params);
 	}
 
 	@Override
 	public int deleteById(Long id) {
-		return userDao.deleteById(id);
+		return ${smallClassName}Dao.deleteById(id);
 	}
 
 	@Override
-	public int save(User record) {
-		return userDao.save(record);
+	public int save(${className} record) {
+		return ${smallClassName}Dao.save(record);
 	}
 
 	@Override
-	public List<User> queryForList(UserBean userBean) {
-		return userDao.queryForList(userBean);
+	public List<${className}> queryForList(${className}Bean params) {
+		return ${smallClassName}Dao.queryForList(params);
 	}
 
 	@Override
-	public User get(Long id) {
-		return userDao.get(id);
+	public ${className} get(Long id) {
+		return ${smallClassName}Dao.get(id);
 	}
 
 	@Override
-	public int updateBatch(User record, UserBean userBean) {
-		return userDao.updateBatch(record, userBean);
+	public int updateBatch(${className} record, ${className}Bean params) {
+		return ${smallClassName}Dao.updateBatch(record, params);
 	}
 
 	@Override
-	public int updateById(User record) {
-		return userDao.updateById(record);
+	public int updateById(${className} record) {
+		return ${smallClassName}Dao.updateById(record);
 	}
 
     @Override
-    public int countBy(User params) {
-        return userDao.countBy(params);
+    public int countBy(${className} params) {
+        return ${smallClassName}Dao.countBy(params);
     }
 
     @Override
-    public int deleteBulks(User params) {
-        return userDao.deleteBulks(params);
+    public int deleteBulks(${className} params) {
+        return ${smallClassName}Dao.deleteBulks(params);
     }
 
     @Override
-    public List<User> queryList(User params) {
-        return userDao.queryList(params);
+    public List<${className}> queryList(${className} params) {
+        return ${smallClassName}Dao.queryList(params);
     }
 
     @Override
-    public List<User> pagedForList(UserBean params) {
-        return userDao.pagedForList(params);
+    public List<${className}> pagedForList(${className}Bean params) {
+        return ${smallClassName}Dao.pagedForList(params);
     }
 
     @Override
-    public List<User> pagedList(User params) {
-        return userDao.pagedList(params);
+    public List<${className}> pagedList(${className} params) {
+        return ${smallClassName}Dao.pagedList(params);
     }
 
     @Override
-    public int updateBulks(User record, User params) {
-        return userDao.updateBulks(record, params);
+    public int updateBulks(${className} record, ${className} params) {
+        return ${smallClassName}Dao.updateBulks(record, params);
     }
 
 }

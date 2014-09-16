@@ -12,7 +12,7 @@ import ${packages}.model.${className};
 import ${packages}.service.spi.${className}Service;
 import com.vteba.service.generic.BaseService;
 import com.vteba.tx.generic.Page;
-import com.vteba.web.action.BasicAction;
+import com.vteba.web.action.GenericAction;
 
 /**
  * ${tableName}控制器
@@ -21,7 +21,7 @@ import com.vteba.web.action.BasicAction;
  */
 @Controller
 @RequestMapping("/${smallClassName}")
-public class ${className}Action extends BasicAction<${className}> {
+public class ${className}Action extends GenericAction<${className}> {
 	@Inject
 	private ${className}Service ${smallClassName}ServiceImpl;
 	
@@ -34,15 +34,15 @@ public class ${className}Action extends BasicAction<${className}> {
 	@ResponseBody
 	@RequestMapping("/list")
 	public List<${className}> list(${className} model) {
-		String hql = "select g from ${className} g ";
-		Page<${className}> page = new Page<${className}>();
-		page.setPageSize(10);
-		List<${className}> list = ${smallClassName}ServiceImpl.pagedQueryByHql(page, hql);
+//		String hql = "select g from ${className} g ";
+//		Page<${className}> page = new Page<${className}>();
+//		page.setPageSize(10);
+		List<${className}> list = null;//${smallClassName}ServiceImpl.pagedQueryByHql(page, hql);
 		return list;
 	}
 	
-	@Override
-    public void setBaseServiceImpl(BaseService<${className}, ?> ${smallClassName}ServiceImpl) {
-        this.${smallClassName}ServiceImpl = (${className}Service) ${smallClassName}ServiceImpl;
-    }
+//	@Override
+//    public void setBaseServiceImpl(BaseService<${className}, ?> ${smallClassName}ServiceImpl) {
+//        this.${smallClassName}ServiceImpl = (${className}Service) ${smallClassName}ServiceImpl;
+//    }
 }

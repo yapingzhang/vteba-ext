@@ -49,6 +49,8 @@ public class CodeBuilder {
 	private boolean mongo = false;// 产生mongodb dao
 	private boolean springDao = false;
 	private boolean pojo = true;
+	private boolean mybatisService = true;
+	private boolean mybatisAction = true;
 	
 	private boolean firstLoad;
 	
@@ -104,10 +106,15 @@ public class CodeBuilder {
 //        properties.setProperty("class.resource.loader.class", "org.apache.velocity.runtime.resource.loader.ClasspathResourceLoader");
         
 		//properties.setProperty("file.resource.loader.description", "Velocity File Resource Loader");
+		
+		String testTemplateName = "Dao.java";
 		if (template == TempType.Generic) {
 		    path = path + "/generictemp";
 		} else if (template == TempType.Base) {
 		    path = path + "/basetemplate";
+		} else if (template == TempType.Mybatis) {
+		    path = path + "/mybatis";
+		    testTemplateName = "Service.java";
 		}
 		properties.setProperty(Velocity.FILE_RESOURCE_LOADER_PATH, path);
 		properties.setProperty(Velocity.FILE_RESOURCE_LOADER_CACHE, "true");
@@ -120,7 +127,7 @@ public class CodeBuilder {
 		velocityEngine.init(properties);
 		
 		try {
-		    velocityEngine.getTemplate("Dao.java");
+		    velocityEngine.getTemplate(testTemplateName);
 		    firstLoad = true;
         } catch (Exception e) {
             try {
@@ -137,11 +144,13 @@ public class CodeBuilder {
                     fileName = "generictemp";
                 } else if (template == TempType.Base) {
                     fileName = "basetemplate";
+                } else if (template == TempType.Mybatis) {
+                    fileName = "mybatis";
                 }
                 
                 velocityEngine = new VelocityEngine();
                 velocityEngine.init(properties);
-                velocityEngine.getTemplate(fileName + "/Dao.java");
+                velocityEngine.getTemplate(fileName + testTemplateName);
             } catch (Exception e2) {
                 try {
                     //设置velocity资源加载方式为jar
@@ -159,9 +168,11 @@ public class CodeBuilder {
                         fileName = "generictemp";
                     } else if (template == TempType.Base) {
                         fileName = "basetemplate";
+                    } else if (template == TempType.Mybatis) {
+                        fileName = "mybatis";
                     }
                     
-                    velocityEngine.getTemplate(fileName + "/Dao.java");
+                    velocityEngine.getTemplate(fileName + testTemplateName);
                 } catch (Exception e3) {
                     throw new IllegalStateException("未能成功加载代码模板。");
                 }
@@ -301,7 +312,7 @@ public class CodeBuilder {
      * @return <b>this</b>
      */
     public CodeBuilder setGenService(boolean genService) {
-        if (!genDao) {
+        if (!genDao && genService) {
             throw new IllegalArgumentException("Service依赖于Dao，请生成Dao文件，调用setGenDao(true);");
         }
         this.genService = genService;
@@ -380,6 +391,24 @@ public class CodeBuilder {
         return this;
     }
     
+    public boolean isMybatisService() {
+        return mybatisService;
+    }
+
+    public CodeBuilder setMybatisService(boolean mybatisService) {
+        this.mybatisService = mybatisService;
+        return this;
+    }
+    
+    public boolean isMybatisAction() {
+        return mybatisAction;
+    }
+
+    public CodeBuilder setMybatisAction(boolean mybatisAction) {
+        this.mybatisAction = mybatisAction;
+        return this;
+    }
+
     /**
 	 * 生成代码。
 	 */
@@ -448,6 +477,10 @@ public class CodeBuilder {
         String mongoTemplateName = "MongoDao.java";
         String springDaoTemplate = "SpringDao.java";
         String springDaoImplTemplate = "SpringDaoImpl.java";
+        
+        String mybatisServiceTemplate = "Service";
+        String mybatisServiceImplTemplate = "ServiceImpl";
+        String mybatisActionTemplate = "Action";
 		
 		//String classPath = parentPackagePath + pgk + "dao/mapper/" + className;
 		
@@ -500,6 +533,17 @@ public class CodeBuilder {
 			generateFile(context, springDaoImplTemplate, targetJavaFile + "dao/impl/" + className);
 			System.out.println("Spring Jdbc Dao文件产生完毕。");
 		}
+		
+		if (mybatisService) {
+		    generateFile(context, mybatisServiceTemplate, targetJavaFile + "service/spi/" + className);//service接口
+            generateFile(context, mybatisServiceImplTemplate, targetJavaFile + "service/impl/" + className);//service实现（不能单独产生）
+            System.out.println("mybatis Service文件产生完毕。");
+		}
+		
+		if (mybatisAction) {
+            generateFile(context, mybatisActionTemplate, targetJavaFile + "service/" + className);//service接口
+            System.out.println("mybatis action文件产生完毕。");
+        }
 	}
 	
 	/**

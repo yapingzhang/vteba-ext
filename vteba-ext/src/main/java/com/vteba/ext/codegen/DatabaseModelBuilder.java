@@ -132,9 +132,9 @@ public class DatabaseModelBuilder {
 			//定义的filed
 			List<String> fieldList = new ArrayList<String>();
 			//getter setter
-			List<MethodPart> getsetMethodList = new ArrayList<>();
+			List<MethodPart> getsetMethodList = new ArrayList<MethodPart>();
 			
-			List<MethodBean> methodList = new ArrayList<>();
+			List<MethodBean> methodList = new ArrayList<MethodBean>();
 			
 			List<String> annotationList = new ArrayList<String>();
 			
