@@ -107,14 +107,12 @@ public class CodeBuilder {
         
 		//properties.setProperty("file.resource.loader.description", "Velocity File Resource Loader");
 		
-		String testTemplateName = "Dao.java";
 		if (template == TempType.Generic) {
 		    path = path + "/generictemp";
 		} else if (template == TempType.Base) {
 		    path = path + "/basetemplate";
 		} else if (template == TempType.Mybatis) {
 		    path = path + "/mybatis";
-		    testTemplateName = "Service.java";
 		}
 		properties.setProperty(Velocity.FILE_RESOURCE_LOADER_PATH, path);
 		properties.setProperty(Velocity.FILE_RESOURCE_LOADER_CACHE, "true");
@@ -127,7 +125,7 @@ public class CodeBuilder {
 		velocityEngine.init(properties);
 		
 		try {
-		    velocityEngine.getTemplate(testTemplateName);
+		    velocityEngine.getTemplate("Service.java");
 		    firstLoad = true;
         } catch (Exception e) {
             try {
@@ -150,7 +148,7 @@ public class CodeBuilder {
                 
                 velocityEngine = new VelocityEngine();
                 velocityEngine.init(properties);
-                velocityEngine.getTemplate(fileName + testTemplateName);
+                velocityEngine.getTemplate(fileName + "/Service.java");
             } catch (Exception e2) {
                 try {
                     //设置velocity资源加载方式为jar
@@ -172,9 +170,32 @@ public class CodeBuilder {
                         fileName = "mybatis";
                     }
                     
-                    velocityEngine.getTemplate(fileName + testTemplateName);
-                } catch (Exception e3) {
-                    throw new IllegalStateException("未能成功加载代码模板。");
+                    velocityEngine.getTemplate(fileName + "/Service.java");
+                } catch (Throwable e3) {
+                    try {
+                        //设置velocity资源加载方式为jar
+                        properties.setProperty(Velocity.RESOURCE_LOADER, "jar");
+                        //设置velocity资源加载方式为file时的处理类
+                        properties.setProperty("jar.resource.loader.class", "org.apache.velocity.runtime.resource.loader.JarResourceLoader");
+                        //设置jar包所在的位置
+                        properties.setProperty("jar.resource.loader.path", "jar:file:WebContent/WEB-INF/lib/vteba-ext-1.0.1.jar");
+                        
+                        velocityEngine = new VelocityEngine();
+                        velocityEngine.init(properties);
+                        
+                        String fileName = "";
+                        if (template == TempType.Generic) {
+                            fileName = "generictemp";
+                        } else if (template == TempType.Base) {
+                            fileName = "basetemplate";
+                        } else if (template == TempType.Mybatis) {
+                            fileName = "mybatis";
+                        }
+                        
+                        velocityEngine.getTemplate(fileName + "/Service.java");
+                    } catch (Exception e4) {
+                        throw new IllegalStateException("未能成功加载代码模板。");
+                    }
                 }
                 
             }
