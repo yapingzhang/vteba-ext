@@ -1,6 +1,5 @@
 package ${packages}.action;
 
-import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -34,7 +33,7 @@ public class ${className}Action extends GenericAction<${className}> {
      */
     @RequestMapping("/init")
     public String init(${className} model, Map<String, Object> maps) {
-        List<${className}> list = ${smallClassName}ServiceImpl.pagedForList(model);
+        List<${className}> list = ${smallClassName}ServiceImpl.pagedList(model);
         maps.put("list", list);
         return "${smallClassName}/list";
     }
@@ -47,7 +46,7 @@ public class ${className}Action extends GenericAction<${className}> {
 	@ResponseBody
 	@RequestMapping("/list")
 	public List<${className}> list(${className} model) {
-		List<${className}> list = ${smallClassName}ServiceImpl.pagedForList(model);
+		List<${className}> list = ${smallClassName}ServiceImpl.pagedList(model);
 		return list;
 	}
 	
