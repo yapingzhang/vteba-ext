@@ -52,6 +52,8 @@ public class CodeBuilder {
 	private boolean mybatisService = true;
 	private boolean mybatisAction = true;
 	
+	private boolean jsonAction = true;
+	
 	private boolean firstLoad;
 	
 	private DB db;// 数据库类型
@@ -208,6 +210,16 @@ public class CodeBuilder {
 	}
 	
 	/**
+	 * 是否产生json交互为主的action
+	 * @param jsonAction
+	 * @return
+	 */
+    public CodeBuilder setJsonAction(boolean jsonAction) {
+        this.jsonAction = jsonAction;
+        return this;
+    }
+
+    /**
 	 * 设置源码位置。例如 src/（普通web项目） 或者 src/main/java/（Maven web项目）
 	 * @param srcPath 源码位置
 	 * @return <b>this</b>
@@ -416,18 +428,10 @@ public class CodeBuilder {
         this.configFilePath = configFilePath;
         return this;
     }
-    
-    public boolean isMybatisService() {
-        return mybatisService;
-    }
 
     public CodeBuilder setMybatisService(boolean mybatisService) {
         this.mybatisService = mybatisService;
         return this;
-    }
-    
-    public boolean isMybatisAction() {
-        return mybatisAction;
     }
 
     public CodeBuilder setMybatisAction(boolean mybatisAction) {
@@ -507,6 +511,8 @@ public class CodeBuilder {
         String mybatisServiceTemplate = "Service.java";
         String mybatisServiceImplTemplate = "ServiceImpl.java";
         String mybatisActionTemplate = "Action.java";
+        String mybatisJsonActionTemplate = "JsonAction.java";
+        
 		
 		//String classPath = parentPackagePath + pgk + "dao/mapper/" + className;
 		
@@ -567,7 +573,11 @@ public class CodeBuilder {
 		}
 		
 		if (mybatisAction) {
-            generateFile(context, mybatisActionTemplate, targetJavaFile + "action/" + className);//service接口
+		    if (jsonAction) {
+	            generateFile(context, mybatisJsonActionTemplate, targetJavaFile + "action/" + className);//service接口
+		    } else {
+		        generateFile(context, mybatisActionTemplate, targetJavaFile + "action/" + className);
+		    }
             System.out.println("mybatis action文件产生完毕。");
         }
 	}
@@ -586,8 +596,10 @@ public class CodeBuilder {
 			File file = null;
 			if (templateName.equals("Model.java")) {
 				file = new File(baseJavaFilePath + ".java");
+			} else if (templateName.equals("JsonAction.java")) {
+			    file = new File(baseJavaFilePath + templateName.substring(4));
 			} else {
-				file = new File(baseJavaFilePath + templateName);
+			    file = new File(baseJavaFilePath + templateName);
 			}
 			if (!file.exists()) {
 				new File(file.getParent()).mkdirs();
