@@ -120,6 +120,11 @@ public class CodeBuilder {
 		properties.setProperty(Velocity.RUNTIME_LOG_LOGSYSTEM_CLASS, "org.apache.velocity.runtime.log.Log4JLogChute");
 		properties.setProperty(Log4JLogChute.RUNTIME_LOG_LOG4J_LOGGER, "org.apache.velocity");
 		properties.setProperty("directive.set.null.allowed", "true");
+		
+		properties.setProperty(Velocity.ENCODING_DEFAULT, "UTF-8");
+		properties.setProperty(Velocity.INPUT_ENCODING, "UTF-8");
+		properties.setProperty(Velocity.OUTPUT_ENCODING, "UTF-8"); 
+		
 		velocityEngine = new VelocityEngine();
 
 		velocityEngine.init(properties);
