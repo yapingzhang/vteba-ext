@@ -32,7 +32,7 @@ public class ${className}ServiceImpl implements ${className}Service {
 	}
 
 	@Override
-	public int deleteById(Long id) {
+	public int deleteById(${pk} id) {
 		return ${smallClassName}Dao.deleteById(id);
 	}
 
@@ -47,7 +47,7 @@ public class ${className}ServiceImpl implements ${className}Service {
 	}
 
 	@Override
-	public ${className} get(Long id) {
+	public ${className} get(${pk} id) {
 		return ${smallClassName}Dao.get(id);
 	}
 
