@@ -562,7 +562,7 @@ public class CodeBuilder {
 		}
 		
 		if (mybatisAction) {
-            generateFile(context, mybatisActionTemplate, targetJavaFile + "service/" + className);//service接口
+            generateFile(context, mybatisActionTemplate, targetJavaFile + "action/" + className);//service接口
             System.out.println("mybatis action文件产生完毕。");
         }
 	}
