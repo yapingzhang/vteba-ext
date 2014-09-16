@@ -14,6 +14,7 @@ import ${packages}.model.${className};
 import ${packages}.service.spi.${className}Service;
 
 import com.vteba.web.action.GenericAction;
+import com.vteba.web.action.JsonBean;
 
 /**
  * ${tableName}控制器
@@ -25,6 +26,18 @@ import com.vteba.web.action.GenericAction;
 public class ${className}Action extends GenericAction<${className}> {
 	@Inject
 	private ${className}Service ${smallClassName}ServiceImpl;
+	
+	/**
+     * 获得${tableName}List，初始化列表页。
+     * @param model 参数
+     * @return ${tableName}List
+     */
+    @RequestMapping("/init")
+    public String init(${className} model, Map<String, Object> maps) {
+        List<${className}> list = ${smallClassName}ServiceImpl.pagedForList(model);
+        maps.put("list", list);
+        return "${smallClassName}/list";
+    }
 	
 	/**
 	 * 获得${tableName}List，Json格式。
@@ -66,9 +79,16 @@ public class ${className}Action extends GenericAction<${className}> {
      */
     @ResponseBody
     @RequestMapping("/doAdd")
-    public String doAdd(${className} model) {
-        ${smallClassName}ServiceImpl.save(model);
-        return SUCCESS;
+    public JsonBean doAdd(${className} model) {
+        int result = ${smallClassName}ServiceImpl.save(model);
+        JsonBean bean = new JsonBean();
+        if (result == 1) {
+            bean.setMessage(SUCCESS);
+        } else {
+            bean.setCode(1);
+            bean.setMessage(ERROR);
+        }
+        return bean;
     }
     
     /**
@@ -98,17 +118,20 @@ public class ${className}Action extends GenericAction<${className}> {
     /**
      * 更新${tableName}信息
      * @param model 要更新的${tableName}信息，含有ID
-     * @return 列表页面
+     * @return 操作结果信息
      */
     @ResponseBody
     @RequestMapping("/update")
-    public String update(${className} model) {
+    public JsonBean update(${className} model) {
         int result = ${smallClassName}ServiceImpl.updateById(model);
+        JsonBean bean = new JsonBean();
         if (result == 1) {
-            return SUCCESS;
+            bean.setMessage(SUCCESS);
         } else {
-            return ERROR;
+            bean.setCode(1);
+            bean.setMessage(ERROR);
         }
+        return bean;
     }
     
     /**
@@ -117,8 +140,15 @@ public class ${className}Action extends GenericAction<${className}> {
      */
     @ResponseBody
     @RequestMapping("/delete")
-    public void delete(${pk} id) {
-        ${smallClassName}ServiceImpl.deleteById(id);
-        return SUCCESS;
+    public JsonBean delete(${pk} id) {
+        int result = ${smallClassName}ServiceImpl.deleteById(id);
+        JsonBean bean = new JsonBean();
+        if (result == 1) {
+            bean.setMessage(SUCCESS);
+        } else {
+            bean.setCode(1);
+            bean.setMessage(ERROR);
+        }
+        return bean;
     }
 }
