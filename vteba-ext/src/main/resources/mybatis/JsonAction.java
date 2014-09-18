@@ -31,11 +31,11 @@ public class ${className}Action extends GenericAction<${className}> {
      * @param model 参数
      * @return ${tableName}List
      */
-    @RequestMapping("/init")
-    public String init(${className} model, Map<String, Object> maps) {
+    @RequestMapping("/initial")
+    public String initial(${className} model, Map<String, Object> maps) {
         List<${className}> list = ${smallClassName}ServiceImpl.pagedList(model);
         maps.put("list", list);
-        return "${smallClassName}/list";
+        return "${smallClassName}/initial";
     }
 	
 	/**
