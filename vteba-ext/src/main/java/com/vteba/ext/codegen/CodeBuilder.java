@@ -51,7 +51,7 @@ public class CodeBuilder {
 	private boolean pojo = true;
 	private boolean mybatisService = true;
 	private boolean mybatisAction = true;
-	
+	private boolean mybatisShards;
 	private boolean jsonAction = true;
 	
 	private boolean firstLoad;
@@ -244,6 +244,16 @@ public class CodeBuilder {
 		return this;
 	}
 	
+	/**
+	 * 设置是否mybatis分区表
+	 * @param mybatisShards true是
+	 * @return <b>this</b>
+	 */
+	public CodeBuilder setMybatisShards(boolean mybatisShards) {
+		this.mybatisShards = mybatisShards;
+		return this;
+	}
+
 	/**
      * 设置数据库schema
      * @param schema 数据库schema
@@ -510,8 +520,11 @@ public class CodeBuilder {
         
         String mybatisServiceTemplate = "Service.java";
         String mybatisServiceImplTemplate = "ServiceImpl.java";
+        String mybatisShardsServiceTemplate = "ShardsService.java";
+        String mybatisShardsServiceImplTemplate = "ShardsServiceImpl.java";
         String mybatisActionTemplate = "Action.java";
         String mybatisJsonActionTemplate = "JsonAction.java";
+        String mybatisShardsActionTemplate = "ShardsAction.java";
         
 		
 		//String classPath = parentPackagePath + pgk + "dao/mapper/" + className;
@@ -567,14 +580,24 @@ public class CodeBuilder {
 		}
 		
 		if (mybatisService) {
-		    generateFile(context, mybatisServiceTemplate, targetJavaFile + "service/spi/" + className);//service接口
-            generateFile(context, mybatisServiceImplTemplate, targetJavaFile + "service/impl/" + className);//service实现（不能单独产生）
-            System.out.println("mybatis Service文件产生完毕。");
+			if (mybatisShards) {
+				generateFile(context, mybatisShardsServiceTemplate, targetJavaFile + "service/spi/" + className);//service接口
+	            generateFile(context, mybatisShardsServiceImplTemplate, targetJavaFile + "service/impl/" + className);//service实现（不能单独产生）
+	            System.out.println("mybatis Shards Service文件产生完毕。");
+			} else {
+				generateFile(context, mybatisServiceTemplate, targetJavaFile + "service/spi/" + className);//service接口
+				generateFile(context, mybatisServiceImplTemplate, targetJavaFile + "service/impl/" + className);//service实现（不能单独产生）
+				System.out.println("mybatis Service文件产生完毕。");
+			}
 		}
 		
 		if (mybatisAction) {
 		    if (jsonAction) {
-	            generateFile(context, mybatisJsonActionTemplate, targetJavaFile + "action/" + className);//service接口
+		    	if (mybatisShards) {
+		    		generateFile(context, mybatisShardsActionTemplate, targetJavaFile + "action/" + className);//service接口
+		    	} else {
+		    		generateFile(context, mybatisJsonActionTemplate, targetJavaFile + "action/" + className);//service接口
+		    	}
 		    } else {
 		        generateFile(context, mybatisActionTemplate, targetJavaFile + "action/" + className);
 		    }
@@ -599,7 +622,11 @@ public class CodeBuilder {
 			} else if (templateName.equals("JsonAction.java")) {
 			    file = new File(baseJavaFilePath + templateName.substring(4));
 			} else {
-			    file = new File(baseJavaFilePath + templateName);
+				if (mybatisShards) {
+					file = new File(baseJavaFilePath + templateName.substring(6));
+				} else {
+					file = new File(baseJavaFilePath + templateName);
+				}
 			}
 			if (!file.exists()) {
 				new File(file.getParent()).mkdirs();
