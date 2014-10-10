@@ -209,6 +209,14 @@ public class CodeBuilder {
         }
 	}
 	
+	public String getRootPath() {
+		return rootPath;
+	}
+
+	public String getSrcPath() {
+		return srcPath;
+	}
+
 	/**
 	 * 是否产生json交互为主的action
 	 * @param jsonAction
