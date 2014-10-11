@@ -251,14 +251,14 @@ public class MyBatisGenerator {
                         .getTargetProject(), defaultPackage + gxf.getTargetPackage());
                 targetFile = new File(directory, gxf.getFileName());
                 if (targetFile.exists()) {
-                    if (gxf.isMergeable()) {
-                        source = XmlFileMergerJaxp.getMergedSource(gxf,
-                                targetFile);
-                    } else if (shellCallback.isOverwriteEnabled()) {
+                	if (shellCallback.isOverwriteEnabled()) {// xml也是有限重写，yinlei
                         source = gxf.getFormattedContent();
                         warnings.add(getString("Warning.11", //$NON-NLS-1$
                                 targetFile.getAbsolutePath()));
-                    } else {
+                    } else if (gxf.isMergeable()) {
+                        source = XmlFileMergerJaxp.getMergedSource(gxf,
+                                targetFile);
+                    }  else {
                         source = gxf.getFormattedContent();
                         targetFile = getUniqueFileName(directory, gxf
                                 .getFileName());

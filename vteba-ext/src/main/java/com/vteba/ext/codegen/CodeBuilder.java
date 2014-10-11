@@ -12,6 +12,9 @@ import java.security.ProtectionDomain;
 import java.sql.Timestamp;
 import java.text.DateFormat;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Properties;
 
 import org.apache.commons.lang3.StringUtils;
@@ -41,6 +44,10 @@ public class CodeBuilder {
 	private TempType template;
 	//private String log4jFilePath;
 	private String keyName;
+	// 如果实体名，不是表名的下划线命名法，可以设置这个属性来覆盖，key是表名，value是实体名
+	private Map<String, String> tableEntityMap;
+	// 表名和表注释
+	private Map<String, String> tableListMap;
 	
 	private boolean genDao = true;
 	private boolean genService = true;//（依赖dao）
@@ -458,7 +465,30 @@ public class CodeBuilder {
         return this;
     }
 
+    public Map<String, String> getTableEntityMap() {
+		return tableEntityMap;
+	}
+
+	public CodeBuilder setTableEntityMap(Map<String, String> tableEntityMap) {
+		this.tableEntityMap = tableEntityMap;
+		return this;
+	}
+    
+    public Map<String, String> getTableListMap() {
+		return tableListMap;
+	}
+
     /**
+     * 设置表信息，key是表名，value是表注释
+     * @param tableList 表Map
+     * @return this
+     */
+	public CodeBuilder setTableList(Map<String, String> tableList) {
+		this.tableListMap = tableList;
+		return this;
+	}
+
+	/**
 	 * 生成代码。
 	 */
 	public void build() {
@@ -467,22 +497,53 @@ public class CodeBuilder {
 			System.err.println("schema为空，请调用schema(String schema)方法设置schema。");
 			return;
 		}
-		if (className == null) {
-			if (tableName == null) {
-				System.err.println("className和tableName不能同时为空，必须设置tableName。");
-				return;
+//		if (className == null) {
+//			if (tableName == null) {
+//				System.err.println("className和tableName不能同时为空，必须设置tableName。");
+//				return;
+//			} else {
+//				className = CaseUtils.toCamelCase(tableName);
+//			}
+//		}
+		if (tableListMap == null && tableName == null) {
+			System.err.println("没有设置相应的表，请设置tableName或者tableListMap。");
+			return;
+		} else {
+			if (tableListMap == null) {
+				tableListMap = new HashMap<String, String>();
+				if (tableDesc == null) {
+					System.err.println("没有设置相应的表注释，请设置tableDesc。");
+					return;
+				}
+				tableListMap.put(tableName, tableDesc);
 			} else {
-				className = CaseUtils.toCamelCase(tableName);
+				if (tableName != null && !tableListMap.containsKey(tableName)) {
+					if (tableDesc == null) {
+						System.err.println("没有设置相应的表注释，请设置tableDesc。");
+						return;
+					} else {
+						tableListMap.put(tableName, tableDesc);
+					}
+				}
+			}
+			if (tableEntityMap == null) {
+				tableEntityMap = new HashMap<String, String>();
+			}
+			if (className != null && !tableEntityMap.containsKey(className)) {
+				tableEntityMap.put(tableName, className);
+			}
+			for (Entry<String, String> entry : tableListMap.entrySet()) {
+				tableEntityMap.put(entry.getKey(), CaseUtils.toCapCamelCase(entry.getKey()));
 			}
 		}
 		if (keyType == null) {
 			System.err.println("keyType为空，请调用keyType(KeyType keyType)方法设置keyType。");
 			return;
 		}
-		if (tableDesc == null) {
-			System.err.println("tableDesc为空，请调用tableDesc(String tableDesc)方法设置tableDesc。");
-			return;
-		}
+//		if (tableDesc == null) {
+//			System.err.println("tableDesc为空，请调用tableDesc(String tableDesc)方法设置tableDesc。");
+//			return;
+//		}
 		if (module == null) {
 			System.err.println("module为空，请调用module(String module)方法设置module。");
 			return;
@@ -495,136 +556,142 @@ public class CodeBuilder {
             throw new IllegalStateException("srcPath为空，请设置。");
         }
 		
-		VelocityContext context = new VelocityContext();
-		context.put("schema", schema);
-		context.put("catalog", catalog);
-		context.put("className", className);
-		context.put("tableName", tableDesc);
-		context.put("pk", keyType.name());
-		context.put("table", tableName);
-		
-		String smallClassName = StringUtils.uncapitalize(className);
-		context.put("smallClassName", smallClassName);
-		
-		String packages = module;
-		String pgk = packages.replace(".", "/") + "/";
+		for (Entry<String, String> entry : tableListMap.entrySet()) {
+			String className = tableEntityMap.get(entry.getKey());
+			String tableName = entry.getKey();
+			VelocityContext context = new VelocityContext();
+			context.put("schema", schema);
+			context.put("catalog", catalog);
+			context.put("className", className);
+			context.put("tableName", entry.getValue());
+			context.put("pk", keyType.name());
+			//context.put("table", tableName);
+			context.put("table", tableName);
+			
+			String smallClassName = StringUtils.uncapitalize(className);
+			context.put("smallClassName", smallClassName);
+			
+			String packages = module;
+			String pgk = packages.replace(".", "/") + "/";
 
-		context.put("packages", packages);
-		context.put("currentDate", DateFormat.getDateTimeInstance().format(new Date()));
+			context.put("packages", packages);
+			context.put("currentDate", DateFormat.getDateTimeInstance().format(new Date()));
 
-		//String rootPath = "/home/yinlei/downloads/vteba/";
-		//String rootPath = projectRootPath;
-		
-		String srcPath = this.srcPath;
-		
-		//String parentPackagePath = "com/vteba/";
-		String parentPackagePath = "";
-		
-		String actionTemplateName = "Action.java";
-        String daoTemplateName = "Dao.java";
-        String daoImplTemplateName = "DaoImpl.java";
-        String serviceTemplateName = "Service.java";
-        String serviceImplTemplateName = "ServiceImpl.java";
-        String mapperTemplateName = "Mapper.java";
-        String modelTemplateName = "Model.java";
-        String mongoTemplateName = "MongoDao.java";
-        String springDaoTemplate = "SpringDao.java";
-        String springDaoImplTemplate = "SpringDaoImpl.java";
-        
-        String mybatisServiceTemplate = "Service.java";
-        String mybatisServiceImplTemplate = "ServiceImpl.java";
-        String mybatisShardsServiceTemplate = "ShardsService.java";
-        String mybatisShardsServiceImplTemplate = "ShardsServiceImpl.java";
-        String mybatisActionTemplate = "Action.java";
-        String mybatisJsonActionTemplate = "JsonAction.java";
-        String mybatisShardsActionTemplate = "ShardsAction.java";
-        
-		
-		//String classPath = parentPackagePath + pgk + "dao/mapper/" + className;
-		
-		String targetJavaFile = rootPath + srcPath + parentPackagePath + pgk;
-		
-		//*********************生成代码文件**************************//
-		if (genDao) {
-			generateFile(context, daoTemplateName, targetJavaFile + "dao/spi/" + className);//dao接口
-			generateFile(context, daoImplTemplateName, targetJavaFile + "dao/impl/" + className);//dao实现（不能单独产生）
-			System.out.println("DAO文件产生完毕。");
-		}
-		if (mongo) {
-            generateFile(context, mongoTemplateName, targetJavaFile + "dao/spi/" + className);//mongo dao接口
-            System.out.println("Mongodb Dao文件产生完毕。");
-        }
-		if (genService) {
-			generateFile(context, serviceTemplateName, targetJavaFile + "service/spi/" + className);//service接口
-			generateFile(context, serviceImplTemplateName, targetJavaFile + "service/impl/" + className);//service实现（不能单独产生）
-			System.out.println("Service文件产生完毕。");
-		}
-		
-		if (tableName != null) {
-			DatabaseModelBuilder builder = new DatabaseModelBuilder("file:" + rootPath, configFilePath);
-			if (genModel) {
-				builder.setDb(db).setTableName(tableName)
-				.setPojo(pojo).setMongo(mongo)
-				.setCatalog(catalog).setSchema(schema).buildParam(context);
-				generateFile(context, modelTemplateName, targetJavaFile + "model/" + className);//model
-				if (pojo) {
-					System.out.println("POJO Model文件产生完毕。");
+			//String rootPath = "/home/yinlei/downloads/vteba/";
+			//String rootPath = projectRootPath;
+			
+			String srcPath = this.srcPath;
+			
+			//String parentPackagePath = "com/vteba/";
+			String parentPackagePath = "";
+			
+			String actionTemplateName = "Action.java";
+	        String daoTemplateName = "Dao.java";
+	        String daoImplTemplateName = "DaoImpl.java";
+	        String serviceTemplateName = "Service.java";
+	        String serviceImplTemplateName = "ServiceImpl.java";
+	        String mapperTemplateName = "Mapper.java";
+	        String modelTemplateName = "Model.java";
+	        String mongoTemplateName = "MongoDao.java";
+	        String springDaoTemplate = "SpringDao.java";
+	        String springDaoImplTemplate = "SpringDaoImpl.java";
+	        
+	        String mybatisServiceTemplate = "Service.java";
+	        String mybatisServiceImplTemplate = "ServiceImpl.java";
+	        String mybatisShardsServiceTemplate = "ShardsService.java";
+	        String mybatisShardsServiceImplTemplate = "ShardsServiceImpl.java";
+	        String mybatisActionTemplate = "Action.java";
+	        String mybatisJsonActionTemplate = "JsonAction.java";
+	        String mybatisShardsActionTemplate = "ShardsAction.java";
+	        
+			
+			//String classPath = parentPackagePath + pgk + "dao/mapper/" + className;
+			
+			String targetJavaFile = rootPath + srcPath + parentPackagePath + pgk;
+			
+			//*********************生成代码文件**************************//
+			if (genDao) {
+				generateFile(context, daoTemplateName, targetJavaFile + "dao/spi/" + className);//dao接口
+				generateFile(context, daoImplTemplateName, targetJavaFile + "dao/impl/" + className);//dao实现（不能单独产生）
+				System.out.println("DAO文件产生完毕。");
+			}
+			if (mongo) {
+	            generateFile(context, mongoTemplateName, targetJavaFile + "dao/spi/" + className);//mongo dao接口
+	            System.out.println("Mongodb Dao文件产生完毕。");
+	        }
+			if (genService) {
+				generateFile(context, serviceTemplateName, targetJavaFile + "service/spi/" + className);//service接口
+				generateFile(context, serviceImplTemplateName, targetJavaFile + "service/impl/" + className);//service实现（不能单独产生）
+				System.out.println("Service文件产生完毕。");
+			}
+			
+			if (tableName != null) {
+				DatabaseModelBuilder builder = new DatabaseModelBuilder("file:" + rootPath, configFilePath);
+				if (genModel) {
+					builder.setDb(db).setTableName(tableName)
+					.setPojo(pojo).setMongo(mongo)
+					.setCatalog(catalog).setSchema(schema).buildParam(context);
+					generateFile(context, modelTemplateName, targetJavaFile + "model/" + className);//model
+					if (pojo) {
+						System.out.println("POJO Model文件产生完毕。");
+					} else {
+						System.out.println("JPA Model文件产生完毕。可能需要调整关联关系和主键。");
+					}
+					if (mongo) {
+						System.out.println("MongoDB Model文件产生完毕。");
+					}
 				} else {
-					System.out.println("JPA Model文件产生完毕。可能需要调整关联关系和主键。");
+					builder.setDb(db).setTableName(tableName)
+					.setGenKey(true)
+					.setCatalog(catalog).setSchema(schema).buildParam(context);
+					this.keyName = builder.getKeyList().get(0);
+					context.put("keyName", CaseUtils.toCapCamelCase(this.keyName));
 				}
-				if (mongo) {
-					System.out.println("MongoDB Model文件产生完毕。");
+			}
+			
+			if (genAction) {
+				generateFile(context, actionTemplateName, targetJavaFile + "action/" + className);//action
+				System.out.println("Action文件产生完毕。");
+			}
+			
+			//*************产生mybatis mapper*******************//
+			if (genMapper && tableName != null) {
+				generateFile(context, mapperTemplateName, targetJavaFile + "dao/mapper/" + className);//mybatis mapper
+				System.out.println("Spring Jdbc Mapper文件产生完毕。");
+			}
+			
+			if (springDao && tableName != null) {
+				generateFile(context, springDaoTemplate, targetJavaFile + "dao/spi/" + className);
+				generateFile(context, springDaoImplTemplate, targetJavaFile + "dao/impl/" + className);
+				System.out.println("Spring Jdbc Dao文件产生完毕。");
+			}
+			
+			if (mybatisService) {
+				if (mybatisShards) {
+					generateFile(context, mybatisShardsServiceTemplate, targetJavaFile + "service/spi/" + className);//service接口
+		            generateFile(context, mybatisShardsServiceImplTemplate, targetJavaFile + "service/impl/" + className);//service实现（不能单独产生）
+		            System.out.println("mybatis Shards Service文件产生完毕。");
+				} else {
+					generateFile(context, mybatisServiceTemplate, targetJavaFile + "service/spi/" + className);//service接口
+					generateFile(context, mybatisServiceImplTemplate, targetJavaFile + "service/impl/" + className);//service实现（不能单独产生）
+					System.out.println("mybatis Service文件产生完毕。");
 				}
-			} else {
-				builder.setDb(db).setTableName(tableName)
-				.setGenKey(true)
-				.setCatalog(catalog).setSchema(schema).buildParam(context);
-				this.keyName = builder.getKeyList().get(0);
-				context.put("keyName", CaseUtils.toCapCamelCase(this.keyName));
 			}
+			
+			if (mybatisAction) {
+			    if (jsonAction) {
+			    	if (mybatisShards) {
+			    		generateFile(context, mybatisShardsActionTemplate, targetJavaFile + "action/" + className);//service接口
+			    	} else {
+			    		generateFile(context, mybatisJsonActionTemplate, targetJavaFile + "action/" + className);//service接口
+			    	}
+			    } else {
+			        generateFile(context, mybatisActionTemplate, targetJavaFile + "action/" + className);
+			    }
+	            System.out.println("mybatis action文件产生完毕。");
+	        }
 		}
 		
-		if (genAction) {
-			generateFile(context, actionTemplateName, targetJavaFile + "action/" + className);//action
-			System.out.println("Action文件产生完毕。");
-		}
-		
-		//*************产生mybatis mapper*******************//
-		if (genMapper && tableName != null) {
-			generateFile(context, mapperTemplateName, targetJavaFile + "dao/mapper/" + className);//mybatis mapper
-			System.out.println("Spring Jdbc Mapper文件产生完毕。");
-		}
-		
-		if (springDao && tableName != null) {
-			generateFile(context, springDaoTemplate, targetJavaFile + "dao/spi/" + className);
-			generateFile(context, springDaoImplTemplate, targetJavaFile + "dao/impl/" + className);
-			System.out.println("Spring Jdbc Dao文件产生完毕。");
-		}
-		
-		if (mybatisService) {
-			if (mybatisShards) {
-				generateFile(context, mybatisShardsServiceTemplate, targetJavaFile + "service/spi/" + className);//service接口
-	            generateFile(context, mybatisShardsServiceImplTemplate, targetJavaFile + "service/impl/" + className);//service实现（不能单独产生）
-	            System.out.println("mybatis Shards Service文件产生完毕。");
-			} else {
-				generateFile(context, mybatisServiceTemplate, targetJavaFile + "service/spi/" + className);//service接口
-				generateFile(context, mybatisServiceImplTemplate, targetJavaFile + "service/impl/" + className);//service实现（不能单独产生）
-				System.out.println("mybatis Service文件产生完毕。");
-			}
-		}
-		
-		if (mybatisAction) {
-		    if (jsonAction) {
-		    	if (mybatisShards) {
-		    		generateFile(context, mybatisShardsActionTemplate, targetJavaFile + "action/" + className);//service接口
-		    	} else {
-		    		generateFile(context, mybatisJsonActionTemplate, targetJavaFile + "action/" + className);//service接口
-		    	}
-		    } else {
-		        generateFile(context, mybatisActionTemplate, targetJavaFile + "action/" + className);
-		    }
-            System.out.println("mybatis action文件产生完毕。");
-        }
 	}
 	
 	/**
