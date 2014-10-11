@@ -40,6 +40,7 @@ public class CodeBuilder {
 	private String tableName;// 表名
 	private TempType template;
 	//private String log4jFilePath;
+	private String keyName;
 	
 	private boolean genDao = true;
 	private boolean genService = true;//（依赖dao）
@@ -277,7 +278,7 @@ public class CodeBuilder {
 //	}
 	
 	/**
-	 * 设置数据库表映射成的实体类文件名字
+	 * 设置数据库表映射成的实体类文件名字。可以不设置，默认表名的驼峰命名法
 	 * @param className 实体类名
 	 * @return <b>this</b>
 	 */
@@ -467,8 +468,12 @@ public class CodeBuilder {
 			return;
 		}
 		if (className == null) {
-			System.err.println("className为空，请调用className(String className)方法设置className。");
-			return;
+			if (tableName == null) {
+				System.err.println("className和tableName不能同时为空，必须设置tableName。");
+				return;
+			} else {
+				className = CaseUtils.toCamelCase(tableName);
+			}
 		}
 		if (keyType == null) {
 			System.err.println("keyType为空，请调用keyType(KeyType keyType)方法设置keyType。");
@@ -539,7 +544,7 @@ public class CodeBuilder {
 		
 		String targetJavaFile = rootPath + srcPath + parentPackagePath + pgk;
 		
-		//*********************如果不想产生某种类型的文件，请注释掉**************************//
+		//*********************生成代码文件**************************//
 		if (genDao) {
 			generateFile(context, daoTemplateName, targetJavaFile + "dao/spi/" + className);//dao接口
 			generateFile(context, daoImplTemplateName, targetJavaFile + "dao/impl/" + className);//dao实现（不能单独产生）
@@ -554,25 +559,34 @@ public class CodeBuilder {
 			generateFile(context, serviceImplTemplateName, targetJavaFile + "service/impl/" + className);//service实现（不能单独产生）
 			System.out.println("Service文件产生完毕。");
 		}
+		
+		if (tableName != null) {
+			DatabaseModelBuilder builder = new DatabaseModelBuilder("file:" + rootPath, configFilePath);
+			if (genModel) {
+				builder.setDb(db).setTableName(tableName)
+				.setPojo(pojo).setMongo(mongo)
+				.setCatalog(catalog).setSchema(schema).buildParam(context);
+				generateFile(context, modelTemplateName, targetJavaFile + "model/" + className);//model
+				if (pojo) {
+					System.out.println("POJO Model文件产生完毕。");
+				} else {
+					System.out.println("JPA Model文件产生完毕。可能需要调整关联关系和主键。");
+				}
+				if (mongo) {
+					System.out.println("MongoDB Model文件产生完毕。");
+				}
+			} else {
+				builder.setDb(db).setTableName(tableName)
+				.setGenKey(true)
+				.setCatalog(catalog).setSchema(schema).buildParam(context);
+				this.keyName = builder.getKeyList().get(0);
+				context.put("keyName", CaseUtils.toCapCamelCase(this.keyName));
+			}
+		}
+		
 		if (genAction) {
 			generateFile(context, actionTemplateName, targetJavaFile + "action/" + className);//action
 			System.out.println("Action文件产生完毕。");
-		}
-		
-		if (tableName != null && genModel) {
-			DatabaseModelBuilder builder = new DatabaseModelBuilder("file:" + rootPath, configFilePath);
-			builder.setDb(db).setTableName(tableName)
-			.setPojo(pojo).setMongo(mongo)
-			.setCatalog(catalog).setSchema(schema).buildParam(context);
-			generateFile(context, modelTemplateName, targetJavaFile + "model/" + className);//model
-			if (pojo) {
-			    System.out.println("POJO Model文件产生完毕。");
-			} else {
-			    System.out.println("JPA Model文件产生完毕。可能需要调整关联关系和主键。");
-			}
-			if (mongo) {
-                System.out.println("MongoDB Model文件产生完毕。");
-            }
 		}
 		
 		//*************产生mybatis mapper*******************//

@@ -97,7 +97,7 @@ public class ${className}Action extends GenericAction<${className}> {
      */
     @RequestMapping("/detail")
     public String detail(${className} model, Map<String, Object> maps) {
-        model = ${smallClassName}ServiceImpl.get(model.getId());
+        model = ${smallClassName}ServiceImpl.get(model.get${keyName}());
         maps.put("model", model);//将model放入视图中，供页面视图使用
         return "${smallClassName}/detail";
     }
@@ -109,7 +109,7 @@ public class ${className}Action extends GenericAction<${className}> {
      */
     @RequestMapping("/edit")
     public String edit(${className} model, Map<String, Object> maps) {
-        model = ${smallClassName}ServiceImpl.get(model.getId());
+        model = ${smallClassName}ServiceImpl.get(model.get${keyName}());
         maps.put("model", model);
         return "${smallClassName}/edit";
     }

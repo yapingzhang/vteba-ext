@@ -30,6 +30,8 @@ public class DatabaseModelBuilder {
 	private boolean mongo = false;
 	private String schema;
 	private String catalog;
+	private boolean genKey;
+	private List<String> keyList;
 	
 	public DatabaseModelBuilder(String rootPath, String configFilePath) {
 		
@@ -55,6 +57,15 @@ public class DatabaseModelBuilder {
         //password = DESUtils.getDecrypt(password);
 	}
 	
+	public List<String> getKeyList() {
+		return keyList;
+	}
+
+	public DatabaseModelBuilder setGenKey(boolean genKey) {
+		this.genKey = genKey;
+		return this;
+	}
+
 	public DatabaseModelBuilder setTableName(String tableName) {
 		this.tableName = tableName;
 		return this;
@@ -118,6 +129,10 @@ public class DatabaseModelBuilder {
 		    DatabaseMetaData dsmetaData = conn.getMetaData();
 		    ResultSet keyResultSet = dsmetaData.getPrimaryKeys(catalog, schema, tableName);
 		    List<String> keyList = getPrimaryKey(keyResultSet);
+		    if (genKey) {
+		    	this.keyList = keyList;
+		    	return;
+		    }
 		    //dsmetaData.getColumns(null, null, tableName, null);
 		    
 		    ResultSet indexResultSet = dsmetaData.getIndexInfo(catalog, schema, tableName, false, true);
