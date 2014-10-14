@@ -129,7 +129,7 @@ public class ${className}Action extends GenericAction<${className}> {
     @RequestMapping("/update")
     public JsonBean update(${className} model) {
     	UpdateBean updateBean = new UpdateBean();
-    	updateBean.setParams(model);
+    	updateBean.setRecord(model);
         int result = ${smallClassName}ServiceImpl.updateById(updateBean);
         JsonBean bean = new JsonBean();
         if (result == 1) {
