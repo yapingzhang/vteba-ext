@@ -122,5 +122,19 @@ public interface ${className}Service {
      * @return 更新记录条数
      */
     public int updateById(UpdateBean params);
+    
+    /**
+     * 根据条件查询唯一结果。params参数是实体bean
+     * @param params 参数，是简单等于条件
+     * @return 唯一结果
+     */
+    public ${className} unique(QueryBean params);
+    
+    /**
+     * 根据条件查询唯一结果。
+     * @param params 参数，是简单等于条件
+     * @return 唯一结果
+     */
+    public ${className} unique(${className} appInfo);
 
 }
