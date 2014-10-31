@@ -19,7 +19,9 @@ import static org.mybatis.generator.internal.util.JavaBeansUtil.getGetterMethodN
 import static org.mybatis.generator.internal.util.StringUtility.stringHasValue;
 import static org.mybatis.generator.internal.util.messages.Messages.getString;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 
@@ -60,6 +62,11 @@ public class ExampleGenerator extends AbstractJavaGenerator {
                 introspectedTable.getExampleType());
         TopLevelClass topLevelClass = new TopLevelClass(type);
         topLevelClass.setVisibility(JavaVisibility.PUBLIC);
+        
+        topLevelClass.addJavaDocLine("分区表，" + introspectedTable.getAttribute("table_remarks") + "（" + introspectedTable.getAliasedFullyQualifiedTableNameAtRuntime() + "）的复杂条件查询类。");
+        topLevelClass.addJavaDocLine("由代码工具自动生成。");
+        topLevelClass.addJavaDocLine("@date " + new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date()));
+//        topLevelClass.addJavaDocLine("*/");
         commentGenerator.addJavaFileComment(topLevelClass);
 
         // add default constructor
@@ -67,6 +74,7 @@ public class ExampleGenerator extends AbstractJavaGenerator {
         method.setVisibility(JavaVisibility.PUBLIC);
         method.setConstructor(true);
         method.setName(type.getShortName());
+        method.addJavaDocLine("创建" + introspectedTable.getAttribute("table_remarks") + "的复杂条件查询实例");
         method.addBodyLine("oredCriteria = new ArrayList<Criteria>();"); //$NON-NLS-1$
 
         commentGenerator.addGeneralMethodComment(method, introspectedTable);

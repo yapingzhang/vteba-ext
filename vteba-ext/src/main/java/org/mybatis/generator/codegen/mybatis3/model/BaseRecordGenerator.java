@@ -17,7 +17,9 @@ package org.mybatis.generator.codegen.mybatis3.model;
 
 import static org.mybatis.generator.internal.util.messages.Messages.getString;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import org.mybatis.generator.api.CommentGenerator;
@@ -57,6 +59,12 @@ public class BaseRecordGenerator extends AbstractJavaGenerator {
                 introspectedTable.getBaseRecordType());
         TopLevelClass topLevelClass = new TopLevelClass(type);
         topLevelClass.setVisibility(JavaVisibility.PUBLIC);
+//        topLevelClass.addJavaDocLine("/**");
+        topLevelClass.addJavaDocLine("分区表，" + introspectedTable.getAttribute("table_remarks") + "（" + introspectedTable.getAliasedFullyQualifiedTableNameAtRuntime() + "）的实体类。");
+        topLevelClass.addJavaDocLine("由代码工具自动生成。");
+        topLevelClass.addJavaDocLine("@date " + new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date()));
+//        topLevelClass.addJavaDocLine("*/");
+        
         commentGenerator.addJavaFileComment(topLevelClass);
 
         

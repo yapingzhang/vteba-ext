@@ -31,6 +31,7 @@ public class ActualTableName {
     private String catalog;
     private String schema;
     private String fullName;
+    private String remarks;
 
     public ActualTableName(String catalog, String schema, String tableName) {
         this.catalog = catalog;
@@ -70,4 +71,12 @@ public class ActualTableName {
     public String toString() {
         return fullName;
     }
+
+	public String getRemarks() {
+		return remarks;
+	}
+
+	public void setRemarks(String remarks) {
+		this.remarks = remarks;
+	}
 }

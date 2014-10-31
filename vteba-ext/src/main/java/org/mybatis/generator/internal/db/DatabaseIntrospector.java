@@ -24,7 +24,9 @@ import static org.mybatis.generator.internal.util.StringUtility.stringContainsSp
 import static org.mybatis.generator.internal.util.StringUtility.stringHasValue;
 import static org.mybatis.generator.internal.util.messages.Messages.getString;
 
+import java.sql.Connection;
 import java.sql.DatabaseMetaData;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -503,10 +505,20 @@ public class DatabaseIntrospector {
                             localTableName, '.');
             logger.debug(getString("Tracing.1", fullTableName)); //$NON-NLS-1$
         }
-
+        
+        Connection connection = databaseMetaData.getConnection();
+        PreparedStatement ps = connection.prepareStatement("show table status where name = ?");
+        ps.setString(1, localTableName);
+        ResultSet resultSet = ps.executeQuery();
+        String remarks = null;
+        while (resultSet.next()) {
+        	remarks = resultSet.getString("comment");
+        }
+        resultSet.close();
+        
         ResultSet rs = databaseMetaData.getColumns(localCatalog, localSchema,
                 localTableName, null);
-
+        
         while (rs.next()) {
             IntrospectedColumn introspectedColumn = ObjectFactory
                     .createIntrospectedColumn(context);
@@ -525,7 +537,8 @@ public class DatabaseIntrospector {
                     rs.getString("TABLE_CAT"), //$NON-NLS-1$
                     rs.getString("TABLE_SCHEM"), //$NON-NLS-1$
                     rs.getString("TABLE_NAME")); //$NON-NLS-1$
-
+            atn.setRemarks(remarks);
+            
             List<IntrospectedColumn> columns = answer.get(atn);
             if (columns == null) {
                 columns = new ArrayList<IntrospectedColumn>();
@@ -608,7 +621,7 @@ public class DatabaseIntrospector {
 
             IntrospectedTable introspectedTable = ObjectFactory
                     .createIntrospectedTable(tc, table, context);
-
+            introspectedTable.setAttribute("table_remarks", atn.getRemarks());
             for (IntrospectedColumn introspectedColumn : entry.getValue()) {
                 introspectedTable.addColumn(introspectedColumn);
             }
